@@ -4,14 +4,6 @@
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script type="text/javascript">
-    /*
-	$(document).ready(function($) {
-		$("#cookid").change(function() {
-				drawChart($("#cookid").val());
-		});
-		drawChart($("#cookid").val());
-	});
-	*/
 
     // Load the Visualization API and the piechart package.
     google.charts.load('current', {'packages':['corechart','line']});
@@ -68,6 +60,11 @@
           }
         },
         colors: ['#a52714', '#097138'],
+                  explorer: {
+		            actions: ['dragToZoom', 'rightClickToReset'],
+		            axis: 'horizontal',
+		            keepInBounds: true,
+            maxZoomIn: 4.0}
       };
 
       // Create our data table out of JSON data loaded from server.
@@ -76,6 +73,30 @@
       // Instantiate and draw our chart, passing in some options.
       var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
       chart.draw(data,options);
+
+		$("#showFood").change(function() {
+			if (!this.checked) {
+				view = new google.visualization.DataView(data);
+				view.hideColumns([1]);
+				if (!$("#showPit").is(":checked")) {
+					view.hideColumns([2]);
+				}
+				chart.draw(view, options);
+			} else {
+				view = new google.visualization.DataView(data);
+				chart.draw(view, options);
+			}
+		});
+		$("#showPit").change(function() {
+			if (!this.checked) {
+				view = new google.visualization.DataView(data);
+				view.hideColumns([2]);
+				chart.draw(view, options);
+			} else {
+				view = new google.visualization.DataView(data);
+				chart.draw(view, options);
+			}
+		});
     }
 
     </script>
@@ -103,6 +124,8 @@
 			}
 		}
 	?>
-    </select>
+    </select><br />
+    <input type="checkbox" id="showFood" checked>Food</input><br />
+    <input type="checkbox" id="showPit" checked>Pit</input><br />
   </body>
 </html>
