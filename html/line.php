@@ -4,16 +4,34 @@
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script type="text/javascript">
+    /*
+	$(document).ready(function($) {
+		$("#cookid").change(function() {
+				drawChart($("#cookid").val());
+		});
+		drawChart($("#cookid").val());
+	});
+	*/
 
     // Load the Visualization API and the piechart package.
     google.charts.load('current', {'packages':['corechart','line']});
 
     // Set a callback to run when the Google Visualization API is loaded.
-    google.charts.setOnLoadCallback(drawChart);
+    //commented out in v0.0.2 because we're loading the chart on select now
+    google.charts.setOnLoadCallback(function() {
+	  $(function() {
+	    $("#cookid").change(function() {
+			drawChart($("#cookid").val());
+		});
+		drawChart($("#cookid").val());
+	  });
+	});
 
-    function drawChart() {
+    function drawChart(val) {
       var jsonData = $.ajax({
           url: "getdata.php",
+          data: "cookid="+val,
+          type: "POST",
           dataType: "json",
           async: false
           }).responseText;
