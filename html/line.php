@@ -65,5 +65,26 @@
 
   <body>
     <div id="chart_div"></div>
+    <select id="cookid">
+    <?php
+		class MyDB extends SQLite3
+		{
+			function __construct()
+			{
+				$this->open('the.db');
+			}
+		}
+		$database=new MyDB();
+		$query="SELECT id, start FROM cooks ORDER BY id DESC LIMIT 20";
+		if ($result=$database->query($query))
+		{
+			while($row=$result->fetchArray())
+			{
+				$t=strtotime($row['start']);
+				echo "    <option value='".$row['id']."'>Cook #".$row['id']." - ".date('m',$t)."/".date('d',$t)."/".date('Y',$t)." at ".date('h',$t).":".date('ia',$t)."</option>\n";
+			}
+		}
+	?>
+    </select>
   </body>
 </html>
