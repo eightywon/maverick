@@ -16,7 +16,7 @@
 
 	if ($result=$database->query($query))
 	{
-		echo "{\n\"cols\": [\n {\"label\": \"A\", \"type\": \"datetime\"},\n {\"label\": \"Pit\", \"type\": \"number\"},\n {\"label\": \"Food\", \"type\": \"number\"}\n ],\n\"rows\": [\n";
+		echo "{\n\"cols\": [\n {\"label\": \"A\", \"type\": \"datetime\"},\n {\"label\": \"Food\", \"type\": \"number\"},\n {\"label\": \"Pit\", \"type\": \"number\"}\n ],\n\"rows\": [\n";
 		$flag=true;
 		while($row=$result->fetchArray())
 		{

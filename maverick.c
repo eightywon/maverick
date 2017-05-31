@@ -318,6 +318,14 @@ int main(int argc, char **argv)
 			cookID=sqlite3_last_insert_rowid(db);
 			printf("Cook ID is %d\n",cookID);
 		}
+
+		//set active cook ID in DB for use in HTML interface
+		snprintf(sql,100,"UPDATE activecook SET cookid=%d;",cookID);
+		printf("SQL: %s\n",sql);
+		rc=sqlite3_exec(db,sql,callback,0,&zErrMsg);
+		if (rc!=SQLITE_OK) {
+			printf("SQL error: %s\n",zErrMsg);
+		}
 	}
         for (;;)
         {

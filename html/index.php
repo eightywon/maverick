@@ -40,22 +40,20 @@
 				success: function(data) {
 					if (data=='Start Cook')
 					{
-						document.getElementById('cookStatus').innerHTML='Cook Stopped';
 						$('#toggleCook').prop('value',data);
 						$('#toggleCook').removeClass().addClass("btn btn-lg btn-success");
+						$('#alertsDiv').css("display","block");
+						$('#alertStatus').css("display","none");
 					}
 					else
 					{
-						document.getElementById('cookStatus').innerHTML='Cook Started';
 						$('#toggleCook').prop('value',data);
 						$('#toggleCook').removeClass().addClass("btn btn-lg btn-danger");
+						$('#alertsDiv').css("display","none");
+						$('#alertStatus').css("display","block");
 					}
 				},
 			});
-		});
-		$('#cookStatus').bind("DOMSubtreeModified",function(){
-                        $('#cookStatus').show();
-			$('#cookStatus').fadeOut(3500);
 		});
 		var callAjax = function(){
 			$.ajax({
@@ -125,27 +123,62 @@
       <!-- Main component for a primary marketing message or call to action -->
       <div class="jumbotron">
        <h2>Maverick ET-732 BBQ Thermometer</h2>
-        <p>
          <?php
-          exec("pgrep maverick", $pids);
-          if(empty($pids)) {
-           $val='Start Cook';
-           $btnClass='btn btn-lg btn-success';
-          } else {
-           $val='Stop Cook';
-           $btnClass='btn btn-lg btn-danger';
-          }
+			exec("pgrep maverick", $pids);
+			if(empty($pids)) {
+				$val='Start Cook';
+				$btnClass='btn btn-lg btn-success';
+				$showAlertsRow='display:block';
+				$alertStatusStyle='display:none';
+			} else {
+				$val='Stop Cook';
+				$btnClass='btn btn-lg btn-danger';
+				$showAlertsRow='display:none';
+				$alertStatusStyle='display:block';
+			}
+
+			class MyDB extends SQLite3 {
+				function __construct() {
+					$this->open('the.db');
+				}
+			}
+			$database=new MyDB();
+
+			$query="SELECT start,end,pitLow,pitHi,foodLow,foodHi,email FROM cooks ORDER BY id DESC LIMIT 1;";
+			if($result=$database->query($query))
+			{
+				while($row=$result->fetchArray())
+				{
+					$pL=$row['pitLow'];
+					$pH=$row['pitHi'];
+					$fL=$row['foodLow'];
+					$fH=$row['foodHi'];
+					$email=$row['email'];
+					$start=$row['start'];
+					$end=$row['end'];
+				}
+			}
          ?>
-        <div class="row">
-         <div class="col-md-6">
-          <input class="<?=$btnClass?>" type="submit" value="<?=$val?>" id="toggleCook">
-         </div>
-         <div class="col-md-6">
-          <span id="cookStatus" class="label label-warning"></span>
-         </div>
-         </div>
-        </p>
+        <div id="alertStatus" class="row" style="<?=$alertStatusStyle?>">Alerts: <?=$alertStatus?></div>
+	    <div id="alertsDiv" class="row" style="<?=$showAlertsRow?>">
+	   	 <form action="alerts.php" method="post">
+	   	  <div class="form-group">
+	   	   <div class="col-sm-2 col-xs-4">
+	   		<label for="pitLow">Pit Low:</label><input type="number" class="form-control" name="pitLow" id="pitLow" min="1" max="500" value=<?=$pL?>>
+	   		<label for="pitHigh">Pit High:</label><input type="number" class="form-control" name="pitHi" id="pitHi" min="1" max="500" value=<?=$pH?>>
+	   		<label for="foodLow">Food Low:</label><input type="number" class="form-control" name="foodLow" id="foodLow" min="1" max="500" value=<?=$fL?>>
+	   		<label for="foodHigh">Food High:</label><input type="number" class="form-control" name="foodHi" id="foodHi" min="1" max="500" value=<?=$fH?>>
+	   		<label for="alertEmail">Send To:</label><input type="email" class="form-control" name="alertEmail" id="alertEmail" value=<?=$email?>>
+	   	   </div>
+	   	  </div>
+	   	 </form>
+        </div><br />
+        <div class="col-md-6">
+	     <input class="<?=$btnClass?>" type="submit" value="<?=$val?>" id="toggleCook">
+        </div><br />
       </div>
+      End: <?=$end?><br />
+      Start: <?=$start?><br />
     </div> <!-- /container -->
 
 

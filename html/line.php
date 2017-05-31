@@ -64,7 +64,7 @@
 		            actions: ['dragToZoom', 'rightClickToReset'],
 		            axis: 'horizontal',
 		            keepInBounds: true,
-            maxZoomIn: 4.0}
+            maxZoomIn: 10.0}
       };
 
       // Create our data table out of JSON data loaded from server.
