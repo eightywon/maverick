@@ -36,7 +36,8 @@
 			$.ajax({
 				url: 'togglecook.php',
 				type: 'POST',
-				data: 'p1=clicked',
+				//data: 'p1=clicked',
+				data: $("#alertsForm").serialize(),
 				success: function(data) {
 					if (data=='Start Cook')
 					{
@@ -158,12 +159,14 @@
 					$end=$row['end'];
 				}
 			}
+			$database->close();
          ?>
         <div id="alertStatus" class="row" style="<?=$alertStatusStyle?>">Alerts: <?=$alertStatus?></div>
 	    <div id="alertsDiv" class="row" style="<?=$showAlertsRow?>">
-	   	 <form action="alerts.php" method="post">
+	   	 <form id="alertsForm">
 	   	  <div class="form-group">
 	   	   <div class="col-sm-2 col-xs-4">
+	   	    <input type="hidden" name="p1" id="p1" value="clicked">
 	   		<label for="pitLow">Pit Low:</label><input type="number" class="form-control" name="pitLow" id="pitLow" min="1" max="500" value=<?=$pL?>>
 	   		<label for="pitHigh">Pit High:</label><input type="number" class="form-control" name="pitHi" id="pitHi" min="1" max="500" value=<?=$pH?>>
 	   		<label for="foodLow">Food Low:</label><input type="number" class="form-control" name="foodLow" id="foodLow" min="1" max="500" value=<?=$fL?>>

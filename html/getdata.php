@@ -30,4 +30,6 @@
 		}
 		echo "\n]\n}";
 	}
+	$database->close();
+	unset($database);
 ?>

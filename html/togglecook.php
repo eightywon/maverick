@@ -29,10 +29,8 @@
 			}
 			$query="UPDATE cooks SET end='".date('Y-m-d H:i:s',time())."' WHERE id=".$activeCook.";";
 			$database->query($query);
-			/*
-			strftime(buff, 20, "%Y-%m-%d %H:%M:%S", localtime(&now));
-			$query="INSERT id, strftime('%m/%d/%Y',start) AS 'd', strftime('%H',start) AS 'h', strftime('%M',start) AS 'm' FROM cooks ORDER BY id DESC LIMIT 1;";
-			*/
+			$query="UPDATE activecook SET cookid=-1";
+			$database->query($query);
         }
 		else
 		{
@@ -62,6 +60,20 @@
 						$dt=$dt." ".$row['h'].":".$row['m']." am";
 					}
 					mail("2192294610@msg.fi.google.com","Cook Started","Cook #".$row['id']." started ".$dt);
+					$activeCook=$row['id'];
+				}
+			}
+
+			if (isset($_POST["alertEmail"]))
+			{
+				if (($database->querySingle('SELECT cookid FROM activecook'))>-1) {
+					$pL=$_POST['pitLow'];
+					$pH=$_POST['pitHi'];
+					$fL=$_POST['foodLow'];
+					$fH=$_POST['foodHi'];
+					$email=$_POST['alertEmail'];
+					$query="UPDATE cooks SET pitLow='".$pL."',pitHi='".$pH."',foodLow='".$fL."',foodHi='".$fH."',email='".$email."' WHERE id=".$activeCook.";";
+		            $database->query($query);
 				}
 			}
 		}
