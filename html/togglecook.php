@@ -36,7 +36,7 @@
 		{
 			exec("sudo ./maverick > /var/log/nginx/maverick.log &");
 			echo "Stop Cook";
-			sleep(2);
+			sleep(1);
 			if ($result=$database->query($query))
 			{
 				while($row=$result->fetchArray())
@@ -64,22 +64,41 @@
 				}
 			}
 
-			if (isset($_POST["alertEmail"]))
-			{
-				if (($database->querySingle('SELECT cookid FROM activecook'))>-1) {
+			if (($database->querySingle('SELECT cookid FROM activecook'))>-1) {
+				$smoker=$_POST['smoker'];
+				$query="UPDATE cooks SET smoker='".$smoker."' WHERE id=".$activeCook.";";
+				if (isset($_POST["alertEmail"]))
+				{
 					$pL=$_POST['pitLow'];
 					$pH=$_POST['pitHi'];
 					$fL=$_POST['foodLow'];
 					$fH=$_POST['foodHi'];
 					$email=$_POST['alertEmail'];
-					$query="UPDATE cooks SET pitLow='".$pL."',pitHi='".$pH."',foodLow='".$fL."',foodHi='".$fH."',email='".$email."' WHERE id=".$activeCook.";";
-		            $database->query($query);
+					$query="UPDATE cooks SET smoker='".$smoker."',pitLow='".$pL."',pitHi='".$pH."',foodLow='".$fL."',foodHi='".$fH."',email='".$email."' WHERE id=".$activeCook.";";
 				}
+				$database->query($query);
 			}
 		}
-	}
-	else
-	{
+	} elseif ($_POST["p1"]=="alerts") {
+		if (($database->querySingle('SELECT cookid FROM activecook'))>-1) {
+			$pL=$database->querySingle('SELECT pitLow FROM cooks WHERE id='.$activeCook.';');
+			$pH=$database->querySingle('SELECT pitHi FROM cooks WHERE id='.$activeCook.';');
+			$fL=$database->querySingle('SELECT foodLow FROM cooks WHERE id='.$activeCook.';');
+			$fH=$database->querySingle('SELECT foodHi FROM cooks WHERE id='.$activeCook.';');
+			$probe1=$database->querySingle('SELECT probe1 FROM readings WHERE cookid='.$activeCook.' ORDER BY time DESC LIMIT 1;');
+			$probe2=$database->querySingle('SELECT probe2 FROM readings WHERE cookid='.$activeCook.' ORDER BY time DESC LIMIT 1;');
+
+			$flag=false;
+			if (($probe1>0 && ($probe1>=$fH || $probe1<=$fL)) || ($probe2>0 && ($probe2>=$pH || $probe2<=$pL))) {
+				echo "alert";
+			}
+			/*
+			if (($probe1>=$fH || $probe1<=$fL) || ($probe2>=$pH || $probe2<=$pL)) {
+				echo "alert";
+			}
+			*/
+		}
+	} else {
 		if (!empty($pids))
 		{
 			echo "Stop Cook";
@@ -96,4 +115,5 @@
 			echo "Start Cook";
 		}
 	}
+	$database->close();
 ?>

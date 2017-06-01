@@ -107,6 +107,7 @@ void outputData(void)
 		*/
 
 		//get alerts info
+		/*
 		if (millis()-last_db_write>=30000)
 		{
 			sqlite3_stmt *res;
@@ -147,6 +148,7 @@ void outputData(void)
 			}
 
 		}
+		*/
 
 		char sql[100];
                 time_t now = time(NULL);

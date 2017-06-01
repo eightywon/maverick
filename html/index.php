@@ -31,7 +31,32 @@
     <![endif]-->
     <script   src="https://code.jquery.com/jquery-3.1.0.js"   integrity="sha256-slogkvB1K3VOkzAI8QITxV3VzpOnkeNVsKvtkYLMjfk="   crossorigin="anonymous"></script>
     <script>
-    	$(function(){
+	$(function(){
+		silenceAlerts=false;
+		var audio = new Audio('alarm.mp3');
+		audio.loop=true;
+
+		$("#silenceAlert").click(function(){
+			$("#silenceAlert").prop("disabled",true);
+			audio.pause();
+			silenceAlerts=true;
+
+			var counter=300;
+			var countdown = function(){
+				counter--;
+				$("#silenceAlert").prop('value', '('+counter+')');
+				if (counter==0) {
+					$("#silenceAlertDiv").css("display","none");
+					$("#silenceAlert").prop('value', 'Silence');
+					$("#silenceAlert").prop("disabled",false);
+					clearInterval(handle);
+					handle=0;
+					silenceAlerts=false;
+				}
+			}
+			var handle=setInterval(countdown,1000);
+		});
+
 		$('#toggleCook').click(function(){
 			$.ajax({
 				url: 'togglecook.php',
@@ -56,27 +81,45 @@
 				},
 			});
 		});
+
 		var callAjax = function(){
 			$.ajax({
 				url:'togglecook.php',
 				type:'POST',
 				data: 'p1=interval',
 				success:function(data){
-					if(data=='Start Cook')
-					{
+					if(data=='Start Cook') {
 						$('#toggleCook').prop('value',data);
 						$('#toggleCook').removeClass().addClass("btn btn-lg btn-success");
-					}
-					else
-					{
+					} else {
 						$('#toggleCook').prop('value', data);
 						$('#toggleCook').removeClass().addClass("btn btn-lg btn-danger");
 					}
 				}
 			});
 
-        	}
-        	setInterval(callAjax,1000);
+		}
+		setInterval(callAjax,1000);
+
+		var checkAlerts = function(){
+			$.ajax({
+				url:'togglecook.php',
+				type:'POST',
+				data: 'p1=alerts',
+				success:function(data){
+					if(data=='alert' && silenceAlerts==false) {
+						audio.play();
+						$("#silenceAlertDiv").css("display","block");
+					} else {
+						audio.pause();
+						if (silenceAlerts==false) {
+							$("#silenceAlertDiv").css("display","none");
+						}
+					}
+				}
+			});
+		}
+		setInterval(checkAlerts,5000);
 	});
    </script>
   </head>
@@ -161,12 +204,12 @@
 			}
 			$database->close();
          ?>
-        <div id="alertStatus" class="row" style="<?=$alertStatusStyle?>">Alerts: <?=$alertStatus?></div>
 	    <div id="alertsDiv" class="row" style="<?=$showAlertsRow?>">
 	   	 <form id="alertsForm">
 	   	  <div class="form-group">
 	   	   <div class="col-sm-2 col-xs-4">
-	   	    <input type="hidden" name="p1" id="p1" value="clicked">
+	   	    <input type="hidden" name="p1" id="p1" value="clicked"></input>
+	   	    <input type="hidden" name="smoker" id="smoker" value="1"></input>
 	   		<label for="pitLow">Pit Low:</label><input type="number" class="form-control" name="pitLow" id="pitLow" min="1" max="500" value=<?=$pL?>>
 	   		<label for="pitHigh">Pit High:</label><input type="number" class="form-control" name="pitHi" id="pitHi" min="1" max="500" value=<?=$pH?>>
 	   		<label for="foodLow">Food Low:</label><input type="number" class="form-control" name="foodLow" id="foodLow" min="1" max="500" value=<?=$fL?>>
@@ -176,9 +219,16 @@
 	   	  </div>
 	   	 </form>
         </div><br />
-        <div class="col-md-6">
-	     <input class="<?=$btnClass?>" type="submit" value="<?=$val?>" id="toggleCook">
-        </div><br />
+        <p>
+         <div class="col-md-12">
+	      <input class="<?=$btnClass?>" type="submit" value="<?=$val?>" id="toggleCook">
+         </div>
+        </p>
+        <p>
+         <div class="col-md-12" id="silenceAlertDiv" style="display:none">
+		  <input class="<?=$btnClass?>" type="button" value="Silence" id="silenceAlert">
+         </div>
+        </p>
       </div>
       End: <?=$end?><br />
       Start: <?=$start?><br />
