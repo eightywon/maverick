@@ -1,5 +1,6 @@
 <html>
   <head>
+    <meta http-equiv="refresh" content="20;URL='line.php'">
     <!--Load the AJAX API-->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
@@ -103,8 +104,6 @@
   </head>
 
   <body>
-    <div id="chart_div"></div>
-    <select id="cookid">
     <?php
 		class MyDB extends SQLite3
 		{
@@ -114,18 +113,29 @@
 			}
 		}
 		$database=new MyDB();
-		$query="SELECT id, start FROM cooks ORDER BY id DESC LIMIT 20";
-		if ($result=$database->query($query))
-		{
-			while($row=$result->fetchArray())
-			{
-				$t=strtotime($row['start']);
-				echo "    <option value='".$row['id']."'>Cook #".$row['id']." - ".date('m',$t)."/".date('d',$t)."/".date('Y',$t)." at ".date('h',$t).":".date('ia',$t)."</option>\n";
-			}
+		$activeCook=$database->querySingle('SELECT cookid FROM activecook;');
+		$food=$database->querySingle('SELECT probe1 FROM readings WHERE cookid='.$activeCook.' ORDER BY time DESC LIMIT 1;');
+		$pit=$database->querySingle('SELECT probe2 FROM readings WHERE cookid='.$activeCook.' ORDER BY time DESC LIMIT 1;');
+		$when=strtotime($database->querySingle('SELECT time FROM readings WHERE cookid='.$activeCook.' ORDER BY time DESC LIMIT 1;'));
+		$w=date('m',$when)."/".date('d',$when)."/".date('Y',$when)." at ".date('g',$when).":".date('ia',$when);
+	    echo "<table width=90% align=center><tr align=center><td width=50%><h1>Pit: ".$pit."</h1></td><td width=50%><h1>Food: ".$food."</h1></td></tr><tr align=center><td colspan=2><h2>".$w."</h2></td></tr></table>\n";
+	    echo "   <table width=90% align=center>\n";
+	    echo "    <tr align=center><td colspan=2><div id='chart_div'></div></td></tr>\n";
+        echo "    <tr align=left><td width=25%></td><td><input type='checkbox' id='showFood' checked>Food</input>&nbsp;<input type='checkbox' id='showPit' checked>Pit</input></td></tr>\n";
+        echo "    <tr align=left><td width=25%></td>\n";
+        echo "     <td><select id='cookid'>\n";
+        $query="SELECT id, start FROM cooks ORDER BY id DESC LIMIT 20";
+				if ($result=$database->query($query))
+				{
+					while($row=$result->fetchArray())
+					{
+						$t=strtotime($row['start']);
+						echo "      <option value='".$row['id']."'>Cook #".$row['id']." - ".date('m',$t)."/".date('d',$t)."/".date('Y',$t)." at ".date('h',$t).":".date('ia',$t)."</option>\n";
+					}
 		}
+		echo "      </select>\n";
+        echo "     </td></tr>\n";
+        echo "   </table>\n";
 	?>
-    </select><br />
-    <input type="checkbox" id="showFood" checked>Food</input><br />
-    <input type="checkbox" id="showPit" checked>Pit</input><br />
   </body>
 </html>

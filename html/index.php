@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+  	<meta http-equiv="refresh" content="1200;URL='./'">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -30,7 +31,11 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
     <script   src="https://code.jquery.com/jquery-3.1.0.js"   integrity="sha256-slogkvB1K3VOkzAI8QITxV3VzpOnkeNVsKvtkYLMjfk="   crossorigin="anonymous"></script>
+    <script src="./nosleep.js"></script>
     <script>
+    var noSleep = new NoSleep();
+	var allowedToSleep=true;
+
 	$(function(){
 		silenceAlerts=false;
 		var audio = new Audio('alarm.mp3');
@@ -61,7 +66,6 @@
 			$.ajax({
 				url: 'togglecook.php',
 				type: 'POST',
-				//data: 'p1=clicked',
 				data: $("#alertsForm").serialize(),
 				success: function(data) {
 					if (data=='Start Cook')
@@ -69,20 +73,27 @@
 						$('#toggleCook').prop('value',data);
 						$('#toggleCook').removeClass().addClass("btn btn-lg btn-success");
 						$('#alertsDiv').css("display","block");
-						$('#alertStatus').css("display","none");
+						noSleep.disable();
+						allowedToSleep=true;
 					}
 					else
 					{
 						$('#toggleCook').prop('value',data);
 						$('#toggleCook').removeClass().addClass("btn btn-lg btn-danger");
 						$('#alertsDiv').css("display","none");
-						$('#alertStatus').css("display","block");
+						if (allowedToSleep) {
+							noSleep.enable();
+							allowedToSleep=false;
+						}
 					}
 				},
 			});
+			$('#silenceAlertDiv').css("display","none");
 		});
 
 		var callAjax = function(){
+			noSleep.disable();
+			allowedToSleep=true;
 			$.ajax({
 				url:'togglecook.php',
 				type:'POST',
@@ -91,6 +102,7 @@
 					if(data=='Start Cook') {
 						$('#toggleCook').prop('value',data);
 						$('#toggleCook').removeClass().addClass("btn btn-lg btn-success");
+						noSleep.disable();
 					} else {
 						$('#toggleCook').prop('value', data);
 						$('#toggleCook').removeClass().addClass("btn btn-lg btn-danger");
@@ -168,17 +180,16 @@
       <div class="jumbotron">
        <h2>Maverick ET-732 BBQ Thermometer</h2>
          <?php
+
 			exec("pgrep maverick", $pids);
 			if(empty($pids)) {
 				$val='Start Cook';
 				$btnClass='btn btn-lg btn-success';
 				$showAlertsRow='display:block';
-				$alertStatusStyle='display:none';
 			} else {
 				$val='Stop Cook';
 				$btnClass='btn btn-lg btn-danger';
 				$showAlertsRow='display:none';
-				$alertStatusStyle='display:block';
 			}
 
 			class MyDB extends SQLite3 {
@@ -188,6 +199,7 @@
 			}
 			$database=new MyDB();
 
+			$smokersList=null;
 			$query="SELECT start,end,pitLow,pitHi,foodLow,foodHi,email FROM cooks ORDER BY id DESC LIMIT 1;";
 			if($result=$database->query($query))
 			{
@@ -202,14 +214,30 @@
 					$end=$row['end'];
 				}
 			}
-			$database->close();
+
+			if (($database->querySingle('SELECT cookid FROM activecook'))>-1) {
+				$keepAwake="noSleep.enable(); allowedToSleep=false;";
+			} else {
+				$keepAwake="noSleep.disable(); allowedToSleep=true;";
+
+				$query="SELECT * FROM smokers ORDER BY id DESC;";
+				$smokersList=$database->query($query);
+			}
          ?>
 	    <div id="alertsDiv" class="row" style="<?=$showAlertsRow?>">
 	   	 <form id="alertsForm">
 	   	  <div class="form-group">
 	   	   <div class="col-sm-2 col-xs-4">
 	   	    <input type="hidden" name="p1" id="p1" value="clicked"></input>
-	   	    <input type="hidden" name="smoker" id="smoker" value="1"></input>
+	   	    <label for="smoker">Smoker:</label>
+	   	    <select name="smoker" id="smoker">
+	   	    <?php if ($smokersList) { ?>
+	   	    <?php  while($smokersRow=$smokersList->fetchArray()) { ?>
+	   	     <option value=<?=$smokersRow['id']?>><?=$smokersRow['desc']?></option>
+	   	    <?php  } ?>
+	   	    <?php } ?>
+	   	    <?php $database->close(); ?>
+	   	    </select>
 	   		<label for="pitLow">Pit Low:</label><input type="number" class="form-control" name="pitLow" id="pitLow" min="1" max="500" value=<?=$pL?>>
 	   		<label for="pitHigh">Pit High:</label><input type="number" class="form-control" name="pitHi" id="pitHi" min="1" max="500" value=<?=$pH?>>
 	   		<label for="foodLow">Food Low:</label><input type="number" class="form-control" name="foodLow" id="foodLow" min="1" max="500" value=<?=$fL?>>
@@ -219,19 +247,13 @@
 	   	  </div>
 	   	 </form>
         </div><br />
-        <p>
-         <div class="col-md-12">
-	      <input class="<?=$btnClass?>" type="submit" value="<?=$val?>" id="toggleCook">
-         </div>
-        </p>
-        <p>
-         <div class="col-md-12" id="silenceAlertDiv" style="display:none">
-		  <input class="<?=$btnClass?>" type="button" value="Silence" id="silenceAlert">
-         </div>
-        </p>
+        <div class="col-md-12">
+         <input class="<?=$btnClass?>" type="submit" value="<?=$val?>" id="toggleCook">
+        </div>
+        <div class="col-md-12" id="silenceAlertDiv" style="display:none">
+		 <input class="btn btn-lg btn-danger" type="button" value="Silence" id="silenceAlert">
+        </div>
       </div>
-      End: <?=$end?><br />
-      Start: <?=$start?><br />
     </div> <!-- /container -->
 
 
@@ -243,6 +265,7 @@
     <script src="./js/bootstrap.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="./js/ie10-viewport-bug-workaround.js"></script>
+    <script><?=$keepAwake?></script>
   </body>
 </html>
 

@@ -21,6 +21,13 @@ const char *email;
 int rc,pitLow,pitHi,foodLow,foodHi;
 unsigned int  last_db_write, cookID;
 
+unsigned int time_since_last = 0;
+unsigned int tsl_micros = 0;
+unsigned int bit_ok = 0, i;
+int current_micros, current_millis;
+unsigned int pin_state;
+
+
 // make the quarternary convertion
 unsigned int quart(unsigned int param)
 {
@@ -94,7 +101,7 @@ void outputData(void)
 			probe2=0;
 		}
 
-                printf("Probe 1:%d\tProbe 2:%d\t@%d\n",probe1,probe2,micros());
+                printf("Probe 1:%d\tProbe 2:%d\t@%d\n",probe1,probe2,millis()/1000);
 
 		/*
                 FILE *of;
@@ -158,7 +165,7 @@ void outputData(void)
                 //fclose(of);
 		if (probe1<500 && probe2<500)
 		{
-			if (last_db_write==0 || (millis()-last_db_write>=30000))
+			if (last_db_write==0 || (millis()-last_db_write>=10000))
 			{
 				snprintf(sql,100,"INSERT INTO readings (cookid,time,probe1,probe2) VALUES (%d,'%s',%d,%d);",cookID,buff,probe1,probe2);
 				printf("%s\n",sql);
@@ -177,31 +184,44 @@ void outputData(void)
 
 void myInterrupt (void)
 {
-        unsigned int time_since_last = 0;
-        unsigned int tsl_micros = 0;
-        unsigned int bit_ok = 0, i;
+	current_micros=micros();
+	current_millis=millis();
+	pin_state=digitalRead(PIN);
+
+	time_since_last = 0;
+	tsl_micros = 0;
+	bit_ok = 0;
+
         //get the time since last interrupt in milli and micro seconds
-        time_since_last = (millis() - last_interrupt_millis);
-        tsl_micros = (micros() - last_interrupt_micros);
+        //time_since_last = (millis() - last_interrupt_millis);
+        time_since_last = (current_millis - last_interrupt_millis);
+
+        //tsl_micros = (micros() - last_interrupt_micros);
+        tsl_micros = (current_micros - last_interrupt_micros);
+
         //store current interrupt time to calculate time since last (above)
-        last_interrupt_micros = micros();
-        last_interrupt_millis = millis();
+        //last_interrupt_micros = micros();
+        last_interrupt_micros = current_micros;
+        //last_interrupt_millis = millis();
+        last_interrupt_millis = current_millis;
+
         //here we're attempting to detect the Maverick's preamble - 8x pulses of ~5ms each, spaced at ~250us
         if (detection_state == STATE_START_PULSES)
         {
                 //if last interrupt was seen between 3ms and 7ms ago
                 //if (((time_since_last > 3) && (time_since_last < 7)) && digitalRead(PIN))
-		if (time_since_last==5 && digitalRead(PIN))
+		//if (time_since_last==5 && digitalRead(PIN))
+		if (time_since_last==5 && pin_state==1)
                 {
                         start_pulse_counter++;
                         if (start_pulse_counter == 8)
                         {
-                                printf("Preamble detected @%d\n", millis());
+                                //printf("Preamble detected @%d\n", current_millis);
                                 start_pulse_counter = 0;
                                 detection_state = STATE_FIRST_BIT;
                         }
 			else {
-printf("*TRIGGER* Since last pulse:%dms (%dms), Time from start:%ds, Pulse count:%d \n",time_since_last, tsl_micros,(millis()/1000), start_pulse_counter);
+				//printf("*TRIGGER* Since last pulse:%dms (%dms), Time from start:%ds, Pulse count:%d \n",time_since_last, tsl_micros,(current_millis/1000), start_pulse_counter);
 			}
                 }
                 else if (tsl_micros > 400)
@@ -209,7 +229,8 @@ printf("*TRIGGER* Since last pulse:%dms (%dms), Time from start:%ds, Pulse count
                         start_pulse_counter = 0;
                 }
         }
-        else if (detection_state == STATE_FIRST_BIT && digitalRead(PIN))
+        //else if (detection_state == STATE_FIRST_BIT && digitalRead(PIN))
+        else if (detection_state == STATE_FIRST_BIT && pin_state==1)
         {
                 detection_state = STATE_DATA;
                 current_bit=1;
@@ -236,7 +257,8 @@ printf("*TRIGGER* Since last pulse:%dms (%dms), Time from start:%ds, Pulse count
                                 short_bit = 0;
                                 bit_ok = 1;
                                 //printf("%d",digitalRead(PIN));
-                                current_bit=digitalRead(PIN);
+                                //current_bit=digitalRead(PIN);
+                                current_bit=pin_state;
                         }
                 }
                 if ((tsl_micros > 375) && (tsl_micros < 600))
@@ -246,12 +268,14 @@ printf("*TRIGGER* Since last pulse:%dms (%dms), Time from start:%ds, Pulse count
                                 //expected a short bit and something went wrong
                                 //start over at getting preamble
                                 detection_state = STATE_START_PULSES;
-                                printf("\n!!!PATTERN FAILURE!!! @%d\n",millis());
+                                //printf("\n!!!PATTERN FAILURE!!! @%d\n",current_millis);
+			} else {
+	                        bit_count++;
+        	                //printf("%d",digitalRead(PIN));
+                	        //current_bit=digitalRead(PIN);
+                	        current_bit=pin_state;
+                        	bit_ok = 1;
 			}
-                        bit_count++;
-                        //printf("%d",digitalRead(PIN));
-                        current_bit=digitalRead(PIN);
-                        bit_ok = 1;
                 }
                 if (bit_ok)
                 {
@@ -287,6 +311,12 @@ printf("*TRIGGER* Since last pulse:%dms (%dms), Time from start:%ds, Pulse count
                         bit_ok = 0;
                 }
         }
+
+	/*
+	if (detection_state==STATE_START_PULSES) {
+		printf("Procedure took %dus, pin state %d\n",micros()-current_micros,pin_state);
+	}
+	*/
 }
 
 int main(int argc, char **argv)
