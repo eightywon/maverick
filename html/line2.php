@@ -14,6 +14,14 @@
 	    		refreshChart();
 			});
 
+			$("#showFood").change(function() {
+				refreshChart();
+			});
+
+			$("#showPit").change(function() {
+				refreshChart();
+			});
+
 			function refreshChart() {
 				var chartData = $.ajax({
 					url: "getdata.php",
@@ -24,7 +32,6 @@
 				}).responseText;
 				drawChart(chartData);
 			} //getJson
-
 			setInterval(refreshChart,10000);
 
 			var callAjax = function(){
@@ -47,77 +54,69 @@
 	}); //google chart
 
 	function drawChart(chartJson) {
-		var options = {
-			hAxis: {
-          		title: 'Time',
-          		textStyle: {
-            		color: '#01579b',
-		            fontSize: 20,
-		            fontName: 'Arial',
-		            bold: true,
-		            italic: true
+		if ($("#showPit").is(":checked") || $("#showFood").is(":checked")) {
+			var options = {
+				hAxis: {
+					title: 'Time',
+					textStyle: {
+						color: '#01579b',
+						fontSize: 20,
+						fontName: 'Arial',
+						bold: true,
+						italic: true
+					},
+					titleTextStyle: {
+						color: '#01579b',
+						fontSize: 16,
+						fontName: 'Arial',
+						bold: false,
+					italic: true
+					}
 				},
-				titleTextStyle: {
-					color: '#01579b',
-					fontSize: 16,
-					fontName: 'Arial',
-					bold: false,
-				italic: true
-				}
-			},
-			vAxis: {
-				title: 'Temp',
-				textStyle: {
-					color: '#1a237e',
-					fontSize: 24,
-					bold: true
+				vAxis: {
+					title: 'Temp',
+					textStyle: {
+						color: '#1a237e',
+						fontSize: 24,
+						bold: true
+					},
+					titleTextStyle: {
+						color: '#1a237e',
+						fontSize: 24,
+						bold: true
+					}
 				},
-				titleTextStyle: {
-					color: '#1a237e',
-					fontSize: 24,
-					bold: true
+				colors: ['#a52714', '#097138'],
+				explorer: {
+					actions: ['dragToZoom', 'rightClickToReset'],
+					axis: 'horizontal',
+					keepInBounds: true,
+					maxZoomIn: 10.0
 				}
-			},
-			colors: ['#a52714', '#097138'],
-			explorer: {
-				actions: ['dragToZoom', 'rightClickToReset'],
-				axis: 'horizontal',
-				keepInBounds: true,
-				maxZoomIn: 10.0
-			}
-		};
+			};
 
-		// Create our data table out of JSON data loaded from server.
-		var data = new google.visualization.DataTable(chartJson);
+			// Create our data table out of JSON data loaded from server.
+			var data = new google.visualization.DataTable(chartJson);
 
-		// Instantiate and draw our chart, passing in some options.
-		var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
-		chart.draw(data,options);
+			// Instantiate and draw our chart, passing in some options.
+			var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+			chart.draw(data,options);
 
-		$("#showFood").change(function() {
-			if (!this.checked) {
+
+
+			if (!$("#showPit").is(":checked") || !$("#showFood").is(":checked")) {
 				view = new google.visualization.DataView(data);
-				view.hideColumns([1]);
+				if (!$("#showFood").is(":checked")) {
+					view.hideColumns([1]);
+				}
 				if (!$("#showPit").is(":checked")) {
 					view.hideColumns([2]);
 				}
 				chart.draw(view, options);
-			} else {
-				view = new google.visualization.DataView(data);
-				chart.draw(view, options);
 			}
-		});
-
-		$("#showPit").change(function() {
-			if (!this.checked) {
-				view = new google.visualization.DataView(data);
-				view.hideColumns([2]);
-				chart.draw(view, options);
-			} else {
-				view = new google.visualization.DataView(data);
-				chart.draw(view, options);
-			}
-		});
+		} else {
+			$("#chart_div").html("");
+		}
 	} //drawChart
 
     </script>
@@ -131,6 +130,7 @@
     <tr align=center>
      <td colspan=2><h2><div id="when"></div></h2></td>
     </tr>
+    <tr align=left><td width=25%></td><td><input type='checkbox' id='showFood' checked>Food</input>&nbsp;<input type='checkbox' id='showPit' checked>Pit</input></td></tr>
    </table>
     <?php
 		class MyDB extends SQLite3
@@ -151,7 +151,7 @@
 	    */
 	    echo "   <table width=90% align=center>\n";
 	    echo "    <tr align=center><td colspan=2><div id='chart_div'></div></td></tr>\n";
-        echo "    <tr align=left><td width=25%></td><td><input type='checkbox' id='showFood' checked>Food</input>&nbsp;<input type='checkbox' id='showPit' checked>Pit</input></td></tr>\n";
+        //echo "    <tr align=left><td width=25%></td><td><input type='checkbox' id='showFood' checked>Food</input>&nbsp;<input type='checkbox' id='showPit' checked>Pit</input></td></tr>\n";
         echo "    <tr align=left><td width=25%></td>\n";
         echo "     <td><select id='cookid'>\n";
         $query="SELECT id, start FROM cooks ORDER BY id DESC LIMIT 20";
