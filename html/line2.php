@@ -10,8 +10,8 @@
 		$(function() {
 			refreshChart();
 
-	    	$("#cookid").change(function() {
-	    		refreshChart();
+			$("#cookid").change(function() {
+				refreshChart();
 			});
 
 			$("#showFood").change(function() {
@@ -31,7 +31,7 @@
 					async: false
 				}).responseText;
 				drawChart(chartData);
-			} //getJson
+			}
 			setInterval(refreshChart,10000);
 
 			var callAjax = function(){
@@ -50,7 +50,7 @@
 			}
 			setInterval(callAjax,10000);
 
-		}); //jquery load
+		});//jquery load
 	}); //google chart
 
 	function drawChart(chartJson) {
@@ -102,8 +102,6 @@
 			var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
 			chart.draw(data,options);
 
-
-
 			if (!$("#showPit").is(":checked") || !$("#showFood").is(":checked")) {
 				view = new google.visualization.DataView(data);
 				if (!$("#showFood").is(":checked")) {
@@ -114,6 +112,7 @@
 				}
 				chart.draw(view, options);
 			}
+
 		} else {
 			$("#chart_div").html("");
 		}
@@ -130,42 +129,26 @@
     <tr align=center>
      <td colspan=2><h2><div id="when"></div></h2></td>
     </tr>
-    <tr align=left><td width=25%></td><td><input type='checkbox' id='showFood' checked>Food</input>&nbsp;<input type='checkbox' id='showPit' checked>Pit</input></td></tr>
-   </table>
+    <tr align=center><td colspan=2><div id='chart_div'></div></td></tr>
+    <tr align=left><td width=25%><input type='checkbox' id='showFood' checked>Food</input>&nbsp;
+     <input type='checkbox' id='showPit' checked>Pit</input></td><td>&nbsp;</td></tr>
     <?php
-		class MyDB extends SQLite3
-		{
-			function __construct()
-			{
-				$this->open('the.db');
-			}
+	class MyDB extends SQLite3 {
+		function __construct() {
+			$this->open('the.db');
 		}
-		$database=new MyDB();
-		/*
-		$activeCook=$database->querySingle('SELECT cookid FROM activecook;');
-		$food=$database->querySingle('SELECT probe1 FROM readings WHERE cookid='.$activeCook.' ORDER BY time DESC LIMIT 1;');
-		$pit=$database->querySingle('SELECT probe2 FROM readings WHERE cookid='.$activeCook.' ORDER BY time DESC LIMIT 1;');
-		$when=strtotime($database->querySingle('SELECT time FROM readings WHERE cookid='.$activeCook.' ORDER BY time DESC LIMIT 1;'));
-		$w=date('m',$when)."/".date('d',$when)."/".date('Y',$when)." at ".date('g',$when).":".date('ia',$when);
-	    echo "<table width=90% align=center><tr align=center><td width=50%><h1>Pit: ".$pit."</h1></td><td width=50%><h1>Food: ".$food."</h1></td></tr><tr align=center><td colspan=2><h2>".$w."</h2></td></tr></table>\n";
-	    */
-	    echo "   <table width=90% align=center>\n";
-	    echo "    <tr align=center><td colspan=2><div id='chart_div'></div></td></tr>\n";
-        //echo "    <tr align=left><td width=25%></td><td><input type='checkbox' id='showFood' checked>Food</input>&nbsp;<input type='checkbox' id='showPit' checked>Pit</input></td></tr>\n";
-        echo "    <tr align=left><td width=25%></td>\n";
-        echo "     <td><select id='cookid'>\n";
+	}
+	$database=new MyDB();
+        echo "    <tr align=left><td width=25%>\n";
+        echo "     <select id='cookid'>\n";
         $query="SELECT id, start FROM cooks ORDER BY id DESC LIMIT 20";
-				if ($result=$database->query($query))
-				{
-					while($row=$result->fetchArray())
-					{
-						$t=strtotime($row['start']);
-						echo "      <option value='".$row['id']."'>Cook #".$row['id']." - ".date('m',$t)."/".date('d',$t)."/".date('Y',$t)." at ".date('h',$t).":".date('ia',$t)."</option>\n";
-					}
+	if ($result=$database->query($query)) {
+		while($row=$result->fetchArray()) {
+			$t=strtotime($row['start']);
+			echo "      <option value='".$row['id']."'>Cook #".$row['id']." - ".date('m',$t)."/".date('d',$t)."/".date('Y',$t)." at ".date('h',$t).":".date('ia',$t)."</option>\n";
 		}
-		echo "      </select>\n";
-        echo "     </td></tr>\n";
-        echo "   </table>\n";
-	?>
+	}
+    ?>
+   </td><td>&nbsp;</td></tr></table>
   </body>
 </html>
