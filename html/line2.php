@@ -4,13 +4,13 @@
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script type="text/javascript">
-
     google.charts.load('current', {'packages':['corechart','line']});
 	google.charts.setOnLoadCallback(function() {
 		$(function() {
+			callAjax();
 			refreshChart();
-
 			$("#cookid").change(function() {
+				callAjax();
 				refreshChart();
 			});
 
@@ -34,15 +34,21 @@
 			}
 			setInterval(refreshChart,10000);
 
-			var callAjax = function(){
+			//var callAjax = function(){
+			function callAjax() {
 				$.ajax({
 					url:'getdata.php',
 					type:'POST',
 					data: {'reqType': 'temps', 'cookid': $("#cookid").val()},
 					dataType: "json",
 					success:function(data){
-						$("#food").html("Food: "+data['probe1']);
-						$("#pit").html("Pit: "+data['probe2']);
+						if (data['when'].indexOf("Cook #")>=0) {
+							$("#food").html("");
+							$("#pit").html("");
+						} else {
+							$("#food").html("Food: "+data['probe1']);
+							$("#pit").html("Pit: "+data['probe2']);
+						}
 						$("#when").html(data['when']);
 					}
 				});
@@ -130,8 +136,13 @@
      <td colspan=2><h2><div id="when"></div></h2></td>
     </tr>
     <tr align=center><td colspan=2><div id='chart_div'></div></td></tr>
-    <tr align=left><td width=25%><input type='checkbox' id='showFood' checked>Food</input>&nbsp;
-     <input type='checkbox' id='showPit' checked>Pit</input></td><td>&nbsp;</td></tr>
+    <tr align=left>
+     <td width=25%>
+      <input type='checkbox' id='showFood' checked>Food</input>&nbsp;
+      <input type='checkbox' id='showPit' checked>Pit</input>
+     </td>
+     <td>&nbsp;</td>
+    </tr>
     <?php
 	class MyDB extends SQLite3 {
 		function __construct() {
@@ -139,10 +150,21 @@
 		}
 	}
 	$database=new MyDB();
+	if ($_COOKIE['cookid']) {
+		$activeCook=$_COOKIE['cookid'];
+	} else {
+		$activeCook=$database->querySingle('SELECT cookid from activecook;');
+	}
         echo "    <tr align=left><td width=25%>\n";
         echo "     <select id='cookid'>\n";
+	if ($activeCook!='-1') {
+		echo "      <option value='".$activeCook."' selected>Active Cook (#".$activeCook.")</option>";
+	}
         $query="SELECT id, start FROM cooks ORDER BY id DESC LIMIT 20";
 	if ($result=$database->query($query)) {
+		if ($activeCook!='-1') {
+			$result->fetchArray(); //prime read to pass up active cook
+		}
 		while($row=$result->fetchArray()) {
 			$t=strtotime($row['start']);
 			echo "      <option value='".$row['id']."'>Cook #".$row['id']." - ".date('m',$t)."/".date('d',$t)."/".date('Y',$t)." at ".date('h',$t).":".date('ia',$t)."</option>\n";
