@@ -13,7 +13,8 @@
 unsigned int volatile start_pulse_counter = 0, detection_state = 0;
 unsigned int volatile last_interrupt_micros = 0, last_interrupt_millis;
 unsigned int fd, data_array_index = 0, data_array[13], shift_value = 0, short_bit = 0, add_1st_bit = 1, current_byte = 0, current_bit = 1, bit_count = 0, ISR_status, save_array[13];
-unsigned int probe1=0, probe2=0;
+int probe1=0, probe2=0;
+int prevProbe1=0, prevProbe2=0;
 unsigned int probe1_array[6], probe2_array[6];
 sqlite3 *db;
 char *zErrMsg=0;
@@ -26,7 +27,7 @@ unsigned int tsl_micros = 0;
 unsigned int bit_ok = 0, i;
 int current_micros, current_millis;
 unsigned int pin_state;
-
+unsigned int firstRead=1, goodData, badReadCount;
 
 // make the quarternary convertion
 unsigned int quart(unsigned int param)
@@ -67,12 +68,23 @@ void sendAlert(char *p,char *s,const char *e,int t) {
 void outputData(void)
 {
         unsigned int i=0;
-        probe1 = probe2 = 0;
+
+	if (firstRead==0) {
+		if (goodData==1) {
+		badReadCount=0;
+		prevProbe1=probe1;
+		prevProbe2=probe2;
+		}
+	}
+        //probe1 = probe2 = 0;
+
         if (    (save_array[0] == 0xAA) &&
                 (save_array[1] == 0x99) &&
                 (save_array[2] == 0x95) &&
                 (save_array[3] == 0x59) )
         {
+        probe1 = probe2 = 0;
+
                 probe2_array[0]= quart(save_array[8] & 0x0F);
                 probe2_array[1]= quart(save_array[8] >> 4);
                 probe2_array[2]= quart(save_array[7] & 0x0F);
@@ -91,15 +103,41 @@ void outputData(void)
 
                 probe1 -= 532;
                 probe1 = (((probe1 * 9)/5) + 32);
+
                 probe2 -= 532;
                 probe2 = (((probe2 * 9)/5) + 32);
 
-		if (probe1==858992533) {
+		if (probe1>=858992500 || probe1<0) {
 			probe1=0;
 		}
-		if (probe2==858992533) {
+		if (probe2>=858992500 || probe2<0) {
 			probe2=0;
 		}
+
+		goodData=1;
+		if (firstRead==0) {
+			if ((probe1<(prevProbe1-20)) || (probe1>(prevProbe1+20))) {
+				badReadCount++;
+				if (badReadCount<3) {
+					goodData=0;
+					//probe1=prevProbe1;
+					printf("Bad data #%d - Probe 1:%d\tPrevProbe 1:%d\t@%d\n",badReadCount,probe1,prevProbe1,millis()/1000);
+				} else {
+					goodData=1;
+				}
+			} else if ((probe2<(prevProbe2-20)) || (probe2>(prevProbe2+20))) {
+				badReadCount++;
+				if (badReadCount<3) {
+					goodData=0;
+					//probe2=prevProbe2;
+					printf("Bad data #%d - Probe 2:%d\tPrevProbe 2:%d\t@%d\n",badReadCount,probe2,prevProbe2,millis()/1000);
+				} else {
+					goodData=1;
+				}
+			}
+		}
+
+		firstRead=0;
 
                 printf("Probe 1:%d\tProbe 2:%d\t@%d\n",probe1,probe2,millis()/1000);
 
@@ -163,7 +201,8 @@ void outputData(void)
                 strftime(buff, 20, "%Y-%m-%d %H:%M:%S", localtime(&now));
                 //fprintf(of, "Probe 1: %d* | Probe 2: %d* | %s<br />\n", probe1, probe2,buff);
                 //fclose(of);
-		if (probe1<500 && probe2<500)
+		//if (probe1<500 && probe2<500)
+		if (goodData==1)
 		{
 			if (last_db_write==0 || (millis()-last_db_write>=10000))
 			{
@@ -216,12 +255,12 @@ void myInterrupt (void)
                         start_pulse_counter++;
                         if (start_pulse_counter == 8)
                         {
-                                //printf("Preamble detected @%d\n", current_millis);
+                                printf("Preamble detected @%d\n", current_millis);
                                 start_pulse_counter = 0;
                                 detection_state = STATE_FIRST_BIT;
                         }
-			else {
-				//printf("*TRIGGER* Since last pulse:%dms (%dms), Time from start:%ds, Pulse count:%d \n",time_since_last, tsl_micros,(current_millis/1000), start_pulse_counter);
+			else if (start_pulse_counter>4) {
+				printf("*TRIGGER* Since last pulse:%dms (%dms), Time from start:%ds, Pulse count:%d \n",time_since_last, tsl_micros,(current_millis/1000), start_pulse_counter);
 			}
                 }
                 else if (tsl_micros > 400)
