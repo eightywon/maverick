@@ -49,3 +49,11 @@ https://hackaday.com/2015/03/25/logic-noise-filters-and-drums/#more-150438
 http://raspberrywebserver.com/sql-databases/set-up-an-sqlite-database-on-a-raspberry-pi.html  
 https://www.raspberrypi.org/documentation/remote-access/web-server/nginx.md  
 
+
+webserver - nginx  
+DBMS - sqlite3  
+interface language - php5-fpm   
+
+to get maverick executable to launch from webportal hosted by nginx when start cook button is clicked you have to add www-data user to /etc/sudoers so the program can be launched via php exec command with sudo flag  
+
+to allow pi to send alerts install postfix SMTP program and set up relay through comcast mail server like - http://forums.xfinity.com/t5/E-Mail-and-Xfinity-Connect-Help/Mac-OS-X-Proper-postfix-configuration-for-SMTP/m-p/1092577#M191652  
