@@ -61,3 +61,12 @@ to allow pi to send alerts install postfix SMTP program and set up relay through
 sqlite3 db (the.db) schema: https://i.imgur.com/qw5fw2T.jpg, /var/www/html/the.db
 
 launch from terminal- $sudo /var/www/html/maverick > ~/maverick.log &
+
+
+1. update, dist-upgrade
+2. sudo apt-get install git
+3. git clone https://github.com/eightywon/maverick
+4. git clone git://git.drogon.net/wiringPi, cd ~/wiringPi ./build
+5. sudo apt-get install libsqlite3-dev
+6. 
+
