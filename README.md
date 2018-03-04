@@ -67,6 +67,11 @@ launch from terminal- $sudo /var/www/html/maverick > ~/maverick.log &
 2. sudo apt-get install git
 3. git clone https://github.com/eightywon/maverick
 4. git clone git://git.drogon.net/wiringPi, cd ~/wiringPi ./build
-5. sudo apt-get install libsqlite3-dev
-6. 
+5. sudo apt-get install libsqlite3-dev, sqlite3
+6. sudo apt-get install nginx
+7. sudo apt-get install php-fpm, configure for nginx: https://www.raspberrypi.org/documentation/remote-access/web-server/nginx.md
+8. sudo apt-get install php-sqlite3
+8. copy db and html files to /var/www/html/
+9. gcc -o maverick maverick.c -lwiringPi -lsqlite3
+10. 
 
