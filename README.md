@@ -73,4 +73,4 @@ launch from terminal- $sudo /var/www/html/maverick > ~/maverick.log &
 10. sudo visudo, add "www-data ALL=(ALL) NOPASSWD: /var/www/html/maverick.sh, /bin/kill" as last line
 11. copy html files to /var/www/html/
 12. sudo sqlite3 -init maverick/db.script /var/www/html/the.db
-13. gcc -o maverick maverick.c -lwiringPi -lsqlite3
+13. gcc -o /var/www/html/maverick maverick.c -lwiringPi -lsqlite3
