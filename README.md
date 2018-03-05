@@ -52,26 +52,25 @@ https://www.raspberrypi.org/documentation/remote-access/web-server/nginx.md
 
 webserver - nginx  
 DBMS - sqlite3  
-interface language - php5-fpm   
+interface language - php7-fpm   
 
 to get maverick executable to launch from webportal hosted by nginx when start cook button is clicked you have to add www-data user to /etc/sudoers so the program can be launched via php exec command with sudo flag  
 
 to allow pi to send alerts install postfix SMTP program and set up relay through comcast mail server like - http://forums.xfinity.com/t5/E-Mail-and-Xfinity-Connect-Help/Mac-OS-X-Proper-postfix-configuration-for-SMTP/m-p/1092577#M191652  
 
-sqlite3 db (the.db) schema: https://i.imgur.com/qw5fw2T.jpg, /var/www/html/the.db
-
 launch from terminal- $sudo /var/www/html/maverick > ~/maverick.log &
 
 
 1. update, dist-upgrade
-2. sudo apt-get install git
-3. git clone https://github.com/eightywon/maverick
-4. git clone git://git.drogon.net/wiringPi, cd ~/wiringPi ./build
-5. sudo apt-get install libsqlite3-dev, sqlite3
-6. sudo apt-get install nginx
-7. sudo apt-get install php-fpm, configure for nginx: https://www.raspberrypi.org/documentation/remote-access/web-server/nginx.md
-8. sudo apt-get install php-sqlite3
-8. copy db and html files to /var/www/html/
-9. gcc -o maverick maverick.c -lwiringPi -lsqlite3
-10. 
-
+2. sudo rasp-config, usual setup, then 5 - Interfacing Options, P6 - Serial, No, Yes
+3. sudo apt-get install git
+4. git clone https://github.com/eightywon/maverick
+5. git clone git://git.drogon.net/wiringPi, cd ~/wiringPi ./build
+6. sudo apt-get install libsqlite3-dev, sqlite3
+7. sudo apt-get install nginx
+8. sudo apt-get install php-fpm, configure for nginx: https://www.raspberrypi.org/documentation/remote-access/web-server/nginx.md
+9. sudo apt-get install php-sqlite3
+10. sudo visudo, add "www-data ALL=NOPASSWD: ALL" as last line
+11. copy html files to /var/www/html/
+12. sudo sqlite3 -init maverick/db.script /var/www/html/the.db
+13. gcc -o maverick maverick.c -lwiringPi -lsqlite3
