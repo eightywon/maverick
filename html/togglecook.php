@@ -34,7 +34,7 @@
         }
 		else
 		{
-			exec("sudo ./maverick > /var/www/html/maverick.log &");
+			exec("sudo ./maverick.sh");
 			echo "Stop Cook";
 			sleep(1);
 			if ($result=$database->query($query))
