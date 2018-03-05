@@ -1,0 +1,134 @@
+Starting on wiringPi PIN 16, gpio PIN 15
+db opened
+Cook ID is 20
+column count: 1
+activecook SQL is: UPDATE activecook SET cookid=20;
+activecook set successfully
+*TRIGGER* Since last pulse:5ms (4999ms), Time from start:5s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (4985ms), Time from start:5s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4987ms), Time from start:5s, Pulse count:7 
+Preamble detected @5258
+Probe 1:73	Probe 2:69	@5
+INSERT INTO readings (cookid,time,probe1,probe2) VALUES (20,'2018-03-05 09:14:28',73,69);
+*TRIGGER* Since last pulse:5ms (5020ms), Time from start:5s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (5004ms), Time from start:5s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4997ms), Time from start:5s, Pulse count:7 
+Preamble detected @5455
+Probe 1:73	Probe 2:69	@5
+*TRIGGER* Since last pulse:5ms (5024ms), Time from start:17s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (5017ms), Time from start:17s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4983ms), Time from start:17s, Pulse count:7 
+Preamble detected @17258
+Bad data #1 - Probe 1:152	PrevProbe 1:73	@17
+Probe 1:152	Probe 2:0	@17
+*TRIGGER* Since last pulse:5ms (4987ms), Time from start:17s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (5000ms), Time from start:17s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4993ms), Time from start:17s, Pulse count:7 
+Preamble detected @17357
+*TRIGGER* Since last pulse:5ms (5010ms), Time from start:17s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (5012ms), Time from start:17s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4997ms), Time from start:17s, Pulse count:7 
+Preamble detected @17455
+Probe 1:73	Probe 2:69	@17
+INSERT INTO readings (cookid,time,probe1,probe2) VALUES (20,'2018-03-05 09:14:40',73,69);
+*TRIGGER* Since last pulse:5ms (5003ms), Time from start:29s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (4987ms), Time from start:29s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4988ms), Time from start:29s, Pulse count:7 
+Preamble detected @29259
+Probe 1:73	Probe 2:69	@29
+INSERT INTO readings (cookid,time,probe1,probe2) VALUES (20,'2018-03-05 09:14:52',73,69);
+*TRIGGER* Since last pulse:5ms (5009ms), Time from start:29s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (5004ms), Time from start:29s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4999ms), Time from start:29s, Pulse count:7 
+Preamble detected @29455
+Probe 1:73	Probe 2:69	@29
+*TRIGGER* Since last pulse:5ms (4999ms), Time from start:41s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (4984ms), Time from start:41s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4989ms), Time from start:41s, Pulse count:7 
+Preamble detected @41259
+Probe 1:73	Probe 2:69	@41
+INSERT INTO readings (cookid,time,probe1,probe2) VALUES (20,'2018-03-05 09:15:04',73,69);
+*TRIGGER* Since last pulse:5ms (5008ms), Time from start:41s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (4999ms), Time from start:41s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (5003ms), Time from start:41s, Pulse count:7 
+Preamble detected @41460
+*TRIGGER* Since last pulse:5ms (4997ms), Time from start:53s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (4987ms), Time from start:53s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4969ms), Time from start:53s, Pulse count:7 
+Preamble detected @53259
+Probe 1:73	Probe 2:69	@53
+INSERT INTO readings (cookid,time,probe1,probe2) VALUES (20,'2018-03-05 09:15:16',73,69);
+*TRIGGER* Since last pulse:5ms (4998ms), Time from start:65s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (4998ms), Time from start:65s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4987ms), Time from start:65s, Pulse count:7 
+Preamble detected @65259
+Probe 1:73	Probe 2:69	@65
+INSERT INTO readings (cookid,time,probe1,probe2) VALUES (20,'2018-03-05 09:15:28',73,69);
+*TRIGGER* Since last pulse:5ms (4991ms), Time from start:65s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (4997ms), Time from start:77s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (4987ms), Time from start:77s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4985ms), Time from start:77s, Pulse count:7 
+Preamble detected @77259
+*TRIGGER* Since last pulse:5ms (5000ms), Time from start:77s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (4985ms), Time from start:77s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4996ms), Time from start:77s, Pulse count:7 
+Preamble detected @77357
+*TRIGGER* Since last pulse:5ms (5014ms), Time from start:77s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (5004ms), Time from start:77s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (5012ms), Time from start:77s, Pulse count:7 
+Preamble detected @77456
+*TRIGGER* Since last pulse:5ms (4997ms), Time from start:89s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (5004ms), Time from start:89s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4993ms), Time from start:89s, Pulse count:7 
+Preamble detected @89259
+Probe 1:73	Probe 2:69	@89
+INSERT INTO readings (cookid,time,probe1,probe2) VALUES (20,'2018-03-05 09:15:52',73,69);
+*TRIGGER* Since last pulse:5ms (5000ms), Time from start:101s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (4985ms), Time from start:101s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4981ms), Time from start:101s, Pulse count:7 
+Preamble detected @101260
+Probe 1:73	Probe 2:69	@101
+INSERT INTO readings (cookid,time,probe1,probe2) VALUES (20,'2018-03-05 09:16:04',73,69);
+*TRIGGER* Since last pulse:5ms (4999ms), Time from start:101s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (4992ms), Time from start:101s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4821ms), Time from start:101s, Pulse count:7 
+*TRIGGER* Since last pulse:5ms (4994ms), Time from start:113s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (4983ms), Time from start:113s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4987ms), Time from start:113s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (4983ms), Time from start:113s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4993ms), Time from start:113s, Pulse count:7 
+Preamble detected @113358
+Probe 1:73	Probe 2:78	@113
+INSERT INTO readings (cookid,time,probe1,probe2) VALUES (20,'2018-03-05 09:16:16',73,78);
+*TRIGGER* Since last pulse:5ms (4990ms), Time from start:125s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (4995ms), Time from start:125s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4988ms), Time from start:125s, Pulse count:7 
+Preamble detected @125260
+Probe 1:73	Probe 2:69	@125
+INSERT INTO readings (cookid,time,probe1,probe2) VALUES (20,'2018-03-05 09:16:28',73,69);
+*TRIGGER* Since last pulse:5ms (4990ms), Time from start:137s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (4983ms), Time from start:137s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4994ms), Time from start:137s, Pulse count:7 
+Preamble detected @137265
+*TRIGGER* Since last pulse:5ms (5023ms), Time from start:137s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (5010ms), Time from start:137s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (5008ms), Time from start:137s, Pulse count:7 
+Preamble detected @137456
+Probe 1:73	Probe 2:69	@137
+INSERT INTO readings (cookid,time,probe1,probe2) VALUES (20,'2018-03-05 09:16:40',73,69);
+*TRIGGER* Since last pulse:5ms (4988ms), Time from start:149s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (4995ms), Time from start:149s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4990ms), Time from start:149s, Pulse count:7 
+Preamble detected @149260
+Probe 1:73	Probe 2:69	@149
+INSERT INTO readings (cookid,time,probe1,probe2) VALUES (20,'2018-03-05 09:16:52',73,69);
+*TRIGGER* Since last pulse:5ms (5002ms), Time from start:149s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (4816ms), Time from start:149s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4990ms), Time from start:161s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (4989ms), Time from start:161s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4998ms), Time from start:161s, Pulse count:7 
+Preamble detected @161260
+*TRIGGER* Since last pulse:5ms (4990ms), Time from start:161s, Pulse count:5 
+*TRIGGER* Since last pulse:5ms (4988ms), Time from start:161s, Pulse count:6 
+*TRIGGER* Since last pulse:5ms (4991ms), Time from start:161s, Pulse count:7 
+Prea

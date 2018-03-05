@@ -388,15 +388,36 @@ int main(int argc, char **argv)
 		{
 			cookID=sqlite3_last_insert_rowid(db);
 			printf("Cook ID is %d\n",cookID);
+
+
+			//check if there's anything in the activecook table
+			sqlite3_stmt *stmt;
+			sqlite3_prepare_v2(db,"select cookid from activecook",-1,&stmt,NULL);
+			int i;
+			while (sqlite3_step(stmt) != SQLITE_DONE) {
+				int num_cols = sqlite3_column_count(stmt);
+
+				for (i = 0; i < num_cols; i++)
+				{
+				}
+				printf("column count: %d\n",num_cols);
+			}
+
+			//set active cook ID in DB for use in HTML interface
+			if (i!=0) {
+				snprintf(sql,100,"UPDATE activecook SET cookid=%d;",cookID);
+			} else {
+				snprintf(sql,100,"INSERT INTO activecook (cookid) values (%d);",cookID);
+			}
+			printf("activecook SQL is: %s\n",sql);
+			rc=sqlite3_exec(db,sql,callback,0,&zErrMsg);
+			if (rc!=SQLITE_OK) {
+				printf("SQL error: %s\n",zErrMsg);
+			} else {
+				printf("activecook set successfully\n");
+			}
 		}
 
-		//set active cook ID in DB for use in HTML interface
-		snprintf(sql,100,"UPDATE activecook SET cookid=%d;",cookID);
-		printf("SQL: %s\n",sql);
-		rc=sqlite3_exec(db,sql,callback,0,&zErrMsg);
-		if (rc!=SQLITE_OK) {
-			printf("SQL error: %s\n",zErrMsg);
-		}
 	}
         for (;;)
         {
