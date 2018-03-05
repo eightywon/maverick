@@ -70,7 +70,7 @@ launch from terminal- $sudo /var/www/html/maverick > ~/maverick.log &
 7. sudo apt-get install nginx
 8. sudo apt-get install php-fpm, configure for nginx: https://www.raspberrypi.org/documentation/remote-access/web-server/nginx.md
 9. sudo apt-get install php-sqlite3
-10. sudo visudo, add "www-data ALL=NOPASSWD: ALL" as last line
+10. sudo visudo, add "www-data ALL=(ALL) NOPASSWD: /var/www/html/maverick.sh, /bin/kill" as last line
 11. copy html files to /var/www/html/
 12. sudo sqlite3 -init maverick/db.script /var/www/html/the.db
 13. gcc -o maverick maverick.c -lwiringPi -lsqlite3
