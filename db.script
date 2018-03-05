@@ -1,0 +1,7 @@
+CREATE TABLE meat (cookid INT,type INT,weight INT,wrap INT,wraptime TEXT);
+CREATE TABLE readings (cookid INT,time TEXT,probe1 INT,probe2 INT,probe3 INT,probe4 INT);
+CREATE TABLE notes (cookid INT,noteid INT,time TEXT,type INT,note TEXT);
+CREATE TABLE weather (cookid INT,ambtemp INT,windspeed INT,humidity INT,time TEXT);
+CREATE TABLE cooks (id INTEGER PRIMARY KEY AUTOINCREMENT,start TEXT,end TEXT,smoker INT,pitLow INT,pitHi INT,foodLow INT,foodHi INT,email TEXT);
+CREATE TABLE activecook (cookid INT);
+CREATE TABLE smokers (id INTEGER PRIMARY KEY AUTOINCREMENT,desc TEXT);
