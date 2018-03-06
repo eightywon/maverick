@@ -2,20 +2,20 @@ Use a Raspberry Pi to monitor Maverick ET-732 temperature readings and provide a
 
 Back end software (maverick.c) sniffs the 433mhz radio signal from the Maverick ET-732 (and likely other models), which transmits temprerature readings every 12 seconds, and stores those readings to a sqlite3 database. Front end software (php on nginx) provides an interface to start/stop cooks, manage cook related information, and view temp gauges and graphs
 
-Software:
+Software:  
 web server - nginx  
 DBMS - sqlite3  
 interface - php7-fpm   
-433mhz sniffer/parser - C
+433mhz sniffer/parser - C  
 
-Hardware:
-Raspberry PI
-433mhz receiver (http://a.co/fe3oOx3)
+Hardware:  
+Raspberry PI  
+433mhz receiver (http://a.co/fe3oOx3)  
 
-GPIO Pinout (physical pin numbers):
-2 (5v) - to 5v pin on receiver
-6 (GND) - to GND on receiver
-8 (BCM14 TXD) - to DATA on receiver
+GPIO Pinout (physical pin numbers):  
+2 (5v) - to 5v pin on receiver  
+6 (GND) - to GND on receiver  
+8 (BCM14 TXD) - to DATA on receiver  
 
 Install steps as of 3/2018 (Raspbian stretch lite version November 2017) (work in progress):
 1. update, dist-upgrade
