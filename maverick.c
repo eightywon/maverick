@@ -10,24 +10,13 @@
 #include <sqlite3.h>
 #include <time.h>
 
-unsigned int volatile start_pulse_counter = 0, detection_state = 0;
-unsigned int volatile last_interrupt_micros = 0, last_interrupt_millis;
-unsigned int fd, data_array_index = 0, data_array[13], shift_value = 0, short_bit = 0, add_1st_bit = 1, current_byte = 0, current_bit = 1, bit_count = 0, ISR_status, save_array[13];
-int probe1=0, probe2=0;
-int prevProbe1=0, prevProbe2=0;
-unsigned int probe1_array[6], probe2_array[6];
-sqlite3 *db;
+unsigned int volatile start_pulse_counter=0,detection_state=0,last_interrupt_micros=0,last_interrupt_millis;
+unsigned int data_array_index=0,data_array[13],shift_value=0,short_bit=0,add_1st_bit=1,current_byte=0;
+unsigned int current_bit=1,bit_count=0,save_array[13],last_db_write,cookID,probe1_array[6],probe2_array[6];
+unsigned int tsl_micros,bit_ok,i,pin_state,firstRead=1,goodData,badReadCount,time_since_last;
+int probe1=0,probe2=0,prevProbe1=0,prevProbe2=0,rc,current_micros,current_millis;
 char *zErrMsg=0;
-const char *email;
-int rc,pitLow,pitHi,foodLow,foodHi;
-unsigned int  last_db_write, cookID;
-
-unsigned int time_since_last = 0;
-unsigned int tsl_micros = 0;
-unsigned int bit_ok = 0, i;
-int current_micros, current_millis;
-unsigned int pin_state;
-unsigned int firstRead=1, goodData, badReadCount;
+sqlite3 *db;
 
 // make the quarternary convertion
 unsigned int quart(unsigned int param) {
@@ -59,7 +48,6 @@ void outputData(void) {
 			prevProbe2=probe2;
 		}
 	}
-        //probe1 = probe2 = 0;
 
         if ((save_array[0] == 0xAA) &&
             (save_array[1] == 0x99) &&
@@ -102,7 +90,6 @@ void outputData(void) {
 				badReadCount++;
 				if (badReadCount<3) {
 					goodData=0;
-					//probe1=prevProbe1;
 					printf("Bad data #%d - Probe 1:%d\tPrevProbe 1:%d\t@%d\n",badReadCount,probe1,prevProbe1,millis()/1000);
 				} else {
 					goodData=1;
@@ -111,7 +98,6 @@ void outputData(void) {
 				badReadCount++;
 				if (badReadCount<3) {
 					goodData=0;
-					//probe2=prevProbe2;
 					printf("Bad data #%d - Probe 2:%d\tPrevProbe 2:%d\t@%d\n",badReadCount,probe2,prevProbe2,millis()/1000);
 				} else {
 					goodData=1;
