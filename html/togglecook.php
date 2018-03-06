@@ -16,47 +16,38 @@
 	}
 
 	exec("pgrep maverick", $pids);
-	if ($_POST["p1"]=="clicked")
-	{
-        if (!empty($pids)) {
+
+	//button was clicked
+	if ($_POST["p1"]=="clicked") {
+		if (!empty($pids)) {
+			//maverick program is running, kill it
 			$pid=$pids[0];
 			exec("sudo kill ".$pid);
 			echo "Start Cook";
 			mail("2192294610@msg.fi.google.com","Cook Stopped","Cook #".$_COOKIE['cookID']." stopped ".date('m/d/Y h:i a',time()));
-			if (isset($_COOKIE['cookID']))
-			{
+			if (isset($_COOKIE['cookID'])) {
 				setcookie("cookID","",time()-3600); //delete it
 			}
 			$query="UPDATE cooks SET end='".date('Y-m-d H:i:s',time())."' WHERE id=".$activeCook.";";
 			$database->query($query);
 			$query="UPDATE activecook SET cookid=-1";
 			$database->query($query);
-        }
-		else
-		{
+		} else {
+			//maverick program isn't running ,start it
 			exec("sudo ./maverick.sh");
 			echo "Stop Cook";
 			sleep(1);
-			if ($result=$database->query($query))
-			{
-				while($row=$result->fetchArray())
-				{
+			if ($result=$database->query($query)) {
+				while($row=$result->fetchArray()) {
 					setcookie("cookID", $row['id']);
 					$dt=$row['d'];
-					if ($row['h']==0)
-					{
+					if ($row['h']==0) {
 						$dt=$dt." 12:".$row['m']." am";
-					}
-					else if ($row['h']==12)
-					{
+					} else if ($row['h']==12) {
 						$dt=$dt." 12:".$row['m']." pm";
-					}
-					else if ($row['h']>12)
-					{
+					} else if ($row['h']>12) {
 						$dt=$dt." ".($row['h']-12).":".$row['m']." pm";
-					}
-					else
-					{
+					} else {
 						$dt=$dt." ".$row['h'].":".$row['m']." am";
 					}
 					mail("2192294610@msg.fi.google.com","Cook Started","Cook #".$row['id']." started ".$dt);
@@ -67,8 +58,7 @@
 			if (($database->querySingle('SELECT cookid FROM activecook'))>-1) {
 				$smoker=$_POST['smoker'];
 				$query="UPDATE cooks SET smoker='".$smoker."' WHERE id=".$activeCook.";";
-				if (isset($_POST["alertEmail"]))
-				{
+				if (isset($_POST["alertEmail"])) {
 					$pL=$_POST['pitLow'];
 					$pH=$_POST['pitHi'];
 					$fL=$_POST['foodLow'];
@@ -79,7 +69,8 @@
 				$database->query($query);
 			}
 		}
-	} elseif ($_POST["p1"]=="alerts") {
+	//ajax call from alerts
+	} else if ($_POST["p1"]=="alerts") {
 		if (($database->querySingle('SELECT cookid FROM activecook'))>-1) {
 			$pL=$database->querySingle('SELECT pitLow FROM cooks WHERE id='.$activeCook.';');
 			$pH=$database->querySingle('SELECT pitHi FROM cooks WHERE id='.$activeCook.';');
@@ -98,20 +89,15 @@
 			}
 			*/
 		}
-	} else {
-		if (!empty($pids))
-		{
+	} else if ($_POST["p1"]=="interval") {
+		if (!empty($pids)) {
 			echo "Stop Cook";
-                        if ($result=$database->query($query))
-                        {
-                                while($row=$result->fetchArray())
-                                {
+                        if ($result=$database->query($query)) {
+                                while($row=$result->fetchArray()) {
 					setcookie("cookID", $row['id']);
                                 }
                         }
-		}
-		else
-		{
+		} else {
 			echo "Start Cook";
 		}
 	}
