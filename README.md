@@ -1,9 +1,23 @@
-#maverick  
+Use a Raspberry Pi to monitor Maverick ET-732 temperature readings and provide an interface to access that information.
 
-webserver - nginx  
+Back end software (maverick.c) sniffs the 433mhz radio signal from the Maverick ET-732 (and likely other models), which transmits temprerature readings every 12 seconds, and stores those readings to a sqlite3 database. Front end software (php on nginx) provides an interface to start/stop cooks, manage cook related information, and view temp gauges and graphs
+
+Software:
+web server - nginx  
 DBMS - sqlite3  
-interface language - php7-fpm   
+interface - php7-fpm   
+433mhz sniffer/parser - C
 
+Hardware:
+Raspberry PI
+433mhz receiver (http://a.co/fe3oOx3)
+
+GPIO Pinout (physical pin numbers):
+2 (5v) - to 5v pin on receiver
+6 (GND) - to GND on receiver
+8 (BCM14 TXD) - to DATA on receiver
+
+Install steps as of 3/2018 (Raspbian stretch lite version November 2017) (work in progress):
 1. update, dist-upgrade
 2. sudo rasp-config, usual setup, then 5 - Interfacing Options, P6 - Serial, No, Yes
 3. sudo apt-get install git
@@ -18,9 +32,9 @@ interface language - php7-fpm
 12. sudo sqlite3 -init maverick/db.script /var/www/html/the.db
 13. gcc -o /var/www/html/maverick maverick.c -lwiringPi -lsqlite3
 
+--
 
-links/research/notes (not maintained)  
-
+links/research/notes (not maintained):
 http://forums.adafruit.com/viewtopic.php?f=8&t=25414  
 http://wiki.openpicus.com/index.php?title=Wifi_bbq  
 http://www.raspberrypi.org/phpBB3/viewtopic.php?f=37&t=29650  
@@ -43,15 +57,12 @@ http://www.raspberrypi.org/phpBB3/viewtopic.php?p=237517#p237517
 http://www.raspberrypi.org/phpBB3/viewtopic.php?f=37&t=29650  
 compiling with mysql headers  
 http://www.raspberrypi.org/phpBB3/viewtopic.php?t=31394&p=393917  
-
 session control - how to recognize when  the maverick is turned off between smokes and start a new session  
 improve front-end - graphs, bbq-like temp gauges  
 how often to log to db? every time sniffed? once per minute/half minute? average all sniffs or just log most recent?  
 clean up code  
-  
 http://stevenhickson.blogspot.com/2013/05/using-google-voice-c-api.html  
 http://forum.arduino.cc/index.php?topic=22052.0   
-  
 http://www.tutorialspoint.com/sqlite/sqlite_c_cpp.htm  
 https://developers.google.com/chart/interactive/docs/php_example?csw=1  
 https://github.com/BjoernSch/MaverickBBQ/blob/master/maverick.py  

@@ -217,7 +217,7 @@
         </div>
         <div class="col-md-12" id="silenceAlertDiv" style="display:none">
 		 <input class="btn btn-lg btn-danger" type="button" value="Silence" id="silenceAlert">
-        </div>
+        </div><br />
       </div>
     </div> <!-- /container -->
     <?php require 'footer.php';?>
