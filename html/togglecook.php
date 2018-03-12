@@ -6,6 +6,7 @@
 			$this->open('the.db');
 		}
 	}
+
 	$database=new MyDB();
 	$query="SELECT id, strftime('%m/%d/%Y',start) AS 'd', strftime('%H',start) AS 'h', strftime('%M',start) AS 'm' FROM cooks ORDER BY id DESC LIMIT 1;";
 	$q1="SELECT cookid FROM activecook;";
@@ -89,7 +90,7 @@
 			}
 			*/
 		}
-	} else if ($_POST["p1"]=="interval") {
+	} /*else if ($_POST["p1"]=="interval") {
 		if (!empty($pids)) {
 			echo "Stop Cook";
                         if ($result=$database->query($query)) {
@@ -100,6 +101,6 @@
 		} else {
 			echo "Start Cook";
 		}
-	}
+	}*/
 	$database->close();
 ?>

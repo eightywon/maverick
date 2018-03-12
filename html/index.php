@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-  	<meta http-equiv="refresh" content="1200;URL='./'">
+    <meta http-equiv="refresh" content="1200;URL='./'">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -68,16 +68,13 @@
 				type: 'POST',
 				data: $("#alertsForm").serialize(),
 				success: function(data) {
-					if (data=='Start Cook')
-					{
+					if (data=='Start Cook') {
 						$('#toggleCook').prop('value',data);
 						$('#toggleCook').removeClass().addClass("btn btn-lg btn-success");
 						$('#alertsDiv').css("display","block");
 						noSleep.disable();
 						allowedToSleep=true;
-					}
-					else
-					{
+					} else {
 						$('#toggleCook').prop('value',data);
 						$('#toggleCook').removeClass().addClass("btn btn-lg btn-danger");
 						$('#alertsDiv').css("display","none");
@@ -93,9 +90,8 @@
 
 		var callAjax = function(){
 			$.ajax({
-				url:'togglecook.php',
+				url:'interval.php',
 				type:'POST',
-				data: 'p1=interval',
 				success:function(data){
 					if(data=='Start Cook') {
 						$('#toggleCook').prop('value',data);

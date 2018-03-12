@@ -1,5 +1,5 @@
 <html>
-  <head>
+   <head>
     <!--Load the AJAX API-->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
@@ -9,6 +9,7 @@
 		$(function() {
 			callAjax();
 			refreshChart();
+
 			$("#cookid").change(function() {
 				callAjax();
 				refreshChart();
@@ -71,6 +72,7 @@
 		});//jquery load
 	}); //google chart
 
+	var data, chart;
 	function drawChart(chartJson) {
 		if ($("#showPit").is(":checked") || $("#showFood").is(":checked")) {
 			var options = {
@@ -110,16 +112,50 @@
 					axis: 'horizontal',
 					keepInBounds: true,
 					maxZoomIn: 10.0
-				}
+				},
+				tooltip: {trigger: 'selection',
+					  ignoreBouds: true,
+					  isHtml: true,
+					  pivot: {x: -50, y: -80}
+					 }
 			};
 
 			// Create our data table out of JSON data loaded from server.
-			var data = new google.visualization.DataTable(chartJson);
-
+			data=new google.visualization.DataTable(chartJson);
 			// Instantiate and draw our chart, passing in some options.
-			var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+			chart=new google.visualization.LineChart(document.getElementById('chart_div'));
 			chart.draw(data,options);
+			//add event for body clicks that clears the tooltip
+			document.body.addEventListener('click',clearSelection,true);
+			//add event for tootltip delete data point click to perform the query
+			chart.setAction({
+				id: 'delPoint',
+				text: 'X - delete data point',
+				action: function() {
+					selection=chart.getSelection();
+					dtstring=data.getFormattedValue(selection[0].row,0);
+					$.ajax({
+						url: 'delpoint.php',
+						type:'POST',
+						data: {'cookid': $("#cookid").val(), 'time': dtstring},
+						success:function(data){
+							if (data!='fail') {
+								var chartData = $.ajax({
+									url: "getdata.php",
+									data: {'reqType': 'chart', 'cookid': $("#cookid").val()},
+									type: "POST",
+									dataType: "json",
+									async: false
+								}).responseText;
+								drawChart(chartData);
+							} else { alert('failed');}
+						}
+					});
+				}
 
+			});
+
+			//show or hide the food or pit graphs based on user input
 			if (!$("#showPit").is(":checked") || !$("#showFood").is(":checked")) {
 				view = new google.visualization.DataView(data);
 				if (!$("#showFood").is(":checked")) {
@@ -136,6 +172,20 @@
 		}
 	} //drawChart
 
+	//clears tooltip when anything outside of chart is clicked/tapped
+	function clearSelection (e) {
+		if (!document.querySelector('#chart_div').contains(e.srcElement)) {
+			chart.setSelection();
+		}
+	}
+
+	function addEvent(element, evnt, funct){
+		if (element.attachEvent) {
+			return element.attachEvent('on'+evnt, funct);
+		} else {
+			return element.addEventListener(evnt, funct, false);
+		}
+	}
     </script>
   </head>
   <body>

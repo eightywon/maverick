@@ -1,4 +1,4 @@
-	<?php
+<?php
 	class MyDB extends SQLite3
 	{
 		function __construct()
@@ -27,8 +27,22 @@
                         $probe2=$row['probe2'];
                 }
         }
-	if ($_POST["p"]=="alerts")
-	{
+
+	//is maverick software running?
+	exec("pgrep maverick", $pids);
+
+	if ($_POST["p"]=="clicked") {
+		//button was clicked, start or kill cook
+		//if it was running
+			//kill the program
+			//clear the cookies
+			//update cooks table with end time
+			//update activecook table to set id to -1
+		//if it was not running
+			//start the program
+			//set cookies
+			//update cooks table with smoker, alert info
+	} else if ($_POST["p"]=="alerts") {
 		if ($probe1<$pL)
 		{
 			echo "PIT LOW: ".$probe1;
