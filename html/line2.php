@@ -69,8 +69,8 @@
 
 		function callAjax() {
 			$.ajax({
-				url:'getdata.php',
-				type:'POST',
+				url: "getdata.php",
+				type: "POST",
 				data: {'reqType': 'temps', 'cookid': $("#cookid").val()},
 				async: false,
 				dataType: "json",
@@ -96,159 +96,159 @@
 	});//jquery load
    }); //google chart
 
-	var data, chart;
-	function drawChart(chartJson) {
-		if ($("#showPit").is(":checked") || $("#showFood").is(":checked")) {
-			var options = {
-				hAxis: {
-					title: 'Time',
-					textStyle: {
-						color: '#01579b',
-						fontSize: 20,
-						fontName: 'Arial',
-						bold: true,
-						italic: true
-					},
-					titleTextStyle: {
-						color: '#01579b',
-						fontSize: 16,
-						fontName: 'Arial',
-						bold: false,
-						italic: true
-					}
+   var data, chart;
+   function drawChart(chartJson) {
+	if ($("#showPit").is(":checked") || $("#showFood").is(":checked")) {
+		var options = {
+			hAxis: {
+				title: 'Time',
+				textStyle: {
+					color: '#01579b',
+					fontSize: 20,
+					fontName: 'Arial',
+					bold: true,
+					italic: true
 				},
-				vAxis: {
-					title: 'Temp',
-					textStyle: {
-						color: '#1a237e',
-						fontSize: 24,
-						bold: true
-					},
-					titleTextStyle: {
-						color: '#1a237e',
-						fontSize: 24,
-						bold: true
-					}
-				},
-				colors: ['#a52714', '#097138'],
-				explorer: {
-					actions: ['dragToZoom', 'rightClickToReset'],
-					axis: 'horizontal',
-					keepInBounds: true,
-					maxZoomIn: 10.0
-				},
-				tooltip: {trigger: 'selection',
-					  ignoreBouds: true,
-					  isHtml: true,
-					  pivot: {x: -50, y: -80}
+				titleTextStyle: {
+					color: '#01579b',
+					fontSize: 16,
+					fontName: 'Arial',
+					bold: false,
+					italic: true
 				}
-			};
-			// Create our data table out of JSON data loaded from server.
-			data=new google.visualization.DataTable(chartJson);
-
-			// Instantiate and draw our chart, passing in some options.
-			chart=new google.visualization.LineChart(document.getElementById('chart_div'));
-			chart.draw(data,options);
-
-			//add event for body clicks that clears the tooltip
-			document.body.addEventListener('click',clearSelection,true);
-
-			//add event for tootltip delete data point click to perform the query
-			chart.setAction({
-				id: 'delPoint',
-				text: 'X - delete data point',
-				action: function() {
-					selection=chart.getSelection();
-					dtstring=data.getFormattedValue(selection[0].row,0);
-					$.ajax({
-						url: 'delpoint.php',
-						type:'POST',
-						data: {'cookid': $("#cookid").val(), 'time': dtstring},
-						success:function(data){
-							if (data!='fail') {
-								$('#chart_div').html('');
-								$('#toggleLines').hide();
-								$('#selectCook').hide();
-								$('.loading').show();
-								$.ajax({
-									url: "getdata.php",
-									data: {'reqType': 'chart', 'cookid': $("#cookid").val()},
-									type: "POST",
-									dataType: "json",
-									async: true,
-									success:function(data) {
-										drawChart(data);
-									}
-								});
-							} else { alert('failed');}
-						}
-					});
+			},
+			vAxis: {
+				title: 'Temp',
+				textStyle: {
+					color: '#1a237e',
+					fontSize: 24,
+					bold: true
+				},
+				titleTextStyle: {
+					color: '#1a237e',
+					fontSize: 24,
+					bold: true
 				}
+			},
+			colors: ['#a52714', '#097138'],
+			explorer: {
+				actions: ['dragToZoom', 'rightClickToReset'],
+				axis: 'horizontal',
+				keepInBounds: true,
+				maxZoomIn: 10.0
+			},
+			tooltip: {trigger: 'selection',
+				  ignoreBouds: true,
+				  isHtml: true,
+				  pivot: {x: -50, y: -80}
+			}
+		};
 
+		// Create our data table out of JSON data loaded from server.
+		data=new google.visualization.DataTable(chartJson);
+
+		// Instantiate and draw our chart, passing in some options.
+		chart=new google.visualization.LineChart(document.getElementById('chart_div'));
+		chart.draw(data,options);
+
+		//add event for body clicks that clears the tooltip
+		document.body.addEventListener('click',clearSelection,true);
+
+		//add event for tootltip delete data point click to perform the query
+		chart.setAction({
+			id: 'delPoint',
+			text: 'X - delete data point',
+			action: function() {
+				selection=chart.getSelection();
+				dtstring=data.getFormattedValue(selection[0].row,0);
+				$.ajax({
+					url: 'delpoint.php',
+					type:'POST',
+					data: {'cookid': $("#cookid").val(), 'time': dtstring},
+					success:function(data){
+						if (data!='fail') {
+							$('#chart_div').html('');
+							$('#toggleLines').hide();
+							$('#selectCook').hide();
+							$('.loading').show();
+							$.ajax({
+								url: "getdata.php",
+								data: {'reqType': 'chart', 'cookid': $("#cookid").val()},
+								type: "POST",
+								dataType: "json",
+								async: true,
+								success:function(data) {
+									drawChart(data);
+								}
+							});
+						} else { alert('failed');}
+					}
+				});
+			}
 			});
 
-			//show or hide the food or pit graphs based on user input
-			if (!$("#showPit").is(":checked") || !$("#showFood").is(":checked")) {
-				view=new google.visualization.DataView(data);
-				if (!$("#showFood").is(":checked")) {
-					view.hideColumns([1]);
-				}
-				if (!$("#showPit").is(":checked")) {
-					view.hideColumns([2]);
-				}
-				chart.draw(view, options);
+		//show or hide the food or pit graphs based on user input
+		if (!$("#showPit").is(":checked") || !$("#showFood").is(":checked")) {
+			view=new google.visualization.DataView(data);
+			if (!$("#showFood").is(":checked")) {
+				view.hideColumns([1]);
 			}
-
-			//chart loaded, hide loading gif, show UI
-			$('.loading').hide();
-			$('#toggleLines').show();
-			$('#selectCook').show();
-		} else {
-			$("#chart_div").html("");
+			if (!$("#showPit").is(":checked")) {
+				view.hideColumns([2]);
+			}
+			chart.draw(view, options);
 		}
-	} //drawChart
 
-	//clears tooltip when anything outside of chart is clicked/tapped
-	function clearSelection (e) {
-		if (!document.querySelector('#chart_div').contains(e.srcElement)) {
-			chart.setSelection();
-		}
+		//chart loaded, hide loading gif, show UI
+		$('.loading').hide();
+		$('#toggleLines').show();
+		$('#selectCook').show();
+	} else {
+		$("#chart_div").html("");
 	}
+   } //drawChart
 
-	function addEvent(element, evnt, funct){
-		if (element.attachEvent) {
-			return element.attachEvent('on'+evnt, funct);
-		} else {
-			return element.addEventListener(evnt, funct, false);
-		}
+   //clears tooltip when anything outside of chart is clicked/tapped
+   function clearSelection (e) {
+	if (!document.querySelector('#chart_div').contains(e.srcElement)) {
+		chart.setSelection();
 	}
-    </script>
-  </head>
-  <body>
-   <table width=90% align=center>
-    <tr align=center>
-     <td width=50%><h1><div id="pit"></div></h1></td>
-     <td width=50%><h1><div id="food"></div></h1></td>
-    </tr>
-    <tr align=center>
-     <td colspan=2><h2><div id="when"></div></h2></td>
-    </tr>
-    <tr align=center>
-     <td colspan=2>
-      <div class="loading"><div id="loading-img"></div></div>
-      <div id='chart_div'></div>
-     </td>
-    </tr>
-    <tr align=left>
-     <td width=25%>
-      <div id="toggleLines" style="display:none">
-       <input type='checkbox' id='showFood' checked>Food</input>&nbsp;
-       <input type='checkbox' id='showPit' checked>Pit</input>
-      </div>
-     </td>
-     <td>&nbsp;</td>
-    </tr>
-    <?php
+   }
+
+   function addEvent(element, evnt, funct){
+	if (element.attachEvent) {
+		return element.attachEvent('on'+evnt, funct);
+	} else {
+		return element.addEventListener(evnt, funct, false);
+	}
+   }
+  </script>
+ </head>
+ <body>
+  <table width=90% align=center>
+   <tr align=center>
+    <td width=50%><h1><div id="pit"></div></h1></td>
+    <td width=50%><h1><div id="food"></div></h1></td>
+   </tr>
+   <tr align=center>
+    <td colspan=2><h2><div id="when"></div></h2></td>
+   </tr>
+   <tr align=center>
+    <td colspan=2>
+     <div class="loading"><div id="loading-img"></div></div>
+     <div id='chart_div'></div>
+    </td>
+   </tr>
+   <tr align=left>
+    <td width=25%>
+     <div id="toggleLines" style="display:none">
+      <input type='checkbox' id='showFood' checked>Food</input>&nbsp;
+      <input type='checkbox' id='showPit' checked>Pit</input>
+     </div>
+    </td>
+    <td>&nbsp;</td>
+   </tr>
+   <?php
 	class MyDB extends SQLite3 {
 		function __construct() {
 			$this->open('the.db');
@@ -260,10 +260,10 @@
 	} else {
 		$activeCook=$database->querySingle('SELECT cookid from activecook;');
 	}
-        echo "    <tr align=left><td width=25%><div id='selectCook' style='display:none'>\n";
-        echo "     <select id='cookid'>\n";
+        echo "   <tr align=left><td width=25%><div id='selectCook' style='display:none'>\n";
+        echo "    <select id='cookid'>\n";
 	if ($activeCook!='-1') {
-		echo "      <option value='".$activeCook."' selected>Active Cook (#".$activeCook.")</option>";
+		echo "     <option value='".$activeCook."' selected>Active Cook (#".$activeCook.")</option>";
 	}
         $query="SELECT id, start FROM cooks ORDER BY id DESC LIMIT 20";
 	if ($result=$database->query($query)) {
@@ -272,10 +272,12 @@
 		}
 		while($row=$result->fetchArray()) {
 			$t=strtotime($row['start']);
-			echo "      <option value='".$row['id']."'>Cook #".$row['id']." - ".date('m',$t)."/".date('d',$t)."/".date('Y',$t)." at ".date('h',$t).":".date('ia',$t)."</option>\n";
+			echo "     <option value='".$row['id']."'>Cook #".$row['id']." - ".date('m',$t)."/".date('d',$t)."/".date('Y',$t)." at ".date('h',$t).":".date('ia',$t)."</option>\n";
 		}
 	}
     ?>
-   </select></div></td><td>&nbsp;</td></tr></table>
-  </body>
+    </select></div></td><td>&nbsp;</td>
+   </tr>
+  </table>
+ </body>
 </html>

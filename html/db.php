@@ -22,6 +22,15 @@
 			return $this->_connection;
 		}
 
+		public function update($query,$pdo) {
+			$result=$pdo->query($query);
+			if ($result===false) {
+				return 'fail';
+			} else {
+				return 'success';
+			}
+		}
+
 		public function delete($query,$pdo) {
 			$result=$pdo->query($query);
 			if ($result===false) {
@@ -50,11 +59,12 @@
 			if ($result===false) {
 				return false;
 			} else {
-				$row=$result->fetchColumn(0);
-				return $row;
+			        $single=$result->fetch(PDO::FETCH_ASSOC);
+				//$row=$result->fetchColumn(0);
+				//return $row;
+				return $single;
 			}
 
 		}
-
 	}
 ?>
