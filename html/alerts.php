@@ -1,37 +1,25 @@
 <?php
-	class MyDB extends SQLite3
-        {
-        	function __construct()
-                {
-                	$this->open('the.db');
-                }
-        }
-        $database=new MyDB();
-	if (isset($_POST["setAlerts"]))
-	{
+        include_once('db.php');
+
+        $db=Database::getInstance();
+        $pdo=$db->getConnection();
+
+
+	if (isset($_POST["setAlerts"])) {
 		$pL=$_POST['pitLow'];
 		$pH=$_POST['pitHi'];
 		$fL=$_POST['foodLow'];
 		$fH=$_POST['foodHi'];
 		$email=$_POST['alertEmail'];
-		$query="UPDATE cooks SET pitLow='".$pL."',pitHi='".$pH."',foodLow='".$fL."',foodHi='".$fH."',email='".$email."' WHERE id=".$_COOKIE['cookID'].";";
-		$result=$database->query($query);
-	}
-	else
-	{
-                $query="SELECT pitLow,pitHi,foodLow,foodHi,email FROM cooks WHERE id=".$_COOKIE['cookID'].";";
-                if($result=$database->query($query))
-		{
-                	while($row=$result->fetchArray())
-                	{
-				$pL=$row['pitLow'];
-				$pH=$row['pitHi'];
-				$fL=$row['foodLow'];
-				$fH=$row['foodHi'];
-				$email=$row['email'];
-                	}
-		}
-
+		$query="update cooks set pitLow='".$pL."',pitHi='".$pH."',foodLow='".$fL."',foodHi='".$fH."',email='".$email."' where id=".$_COOKIE['cookID'].";";
+	        $single=Database::update($query,$pdo);
+	} else {
+	        $row=Database::selectSingle('SELECT pitLow,pitHi,foodLow,foodHi,email FROM cooks WHERE id='.$_COOKIE['cookID'],$pdo);
+		$pL=$row['pitLow'];
+		$pH=$row['pitHi'];
+		$fL=$row['foodLow'];
+		$fH=$row['foodHi'];
+		$email=$row['email'];
 	}
 ?>
 
