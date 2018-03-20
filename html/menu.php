@@ -15,8 +15,9 @@
               <li<?=$btnActive[0]?>><a href="./index.php">Home</a></li>
               <li<?=$btnActive[1]?>><a href="alerts.php">Alerts</a></li>
               <li<?=$btnActive[2]?>><a href="smokers.php">Smokers</a></li>
-              <li<?=$btnActive[3]?>><a href="bbq.php">Gauges</a></li>
-              <li<?=$btnActive[4]?>><a href="line2.php">Graphs</a></li>
+              <li<?=$btnActive[3]?>><a href="cooks.php">Cooks</a></li>
+              <li<?=$btnActive[4]?>><a href="bbq.php">Gauges</a></li>
+              <li<?=$btnActive[5]?>><a href="line2.php">Graphs</a></li>
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
                 <ul class="dropdown-menu">
