@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-  	<meta http-equiv="refresh" content="1200;URL='./'">
+    <meta http-equiv="refresh" content="1200;URL='./'">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -34,7 +34,7 @@
     <script src="./nosleep.js"></script>
     <script>
     var noSleep = new NoSleep();
-	var allowedToSleep=true;
+    var allowedToSleep=true;
 
 	$(function(){
 		silenceAlerts=false;
@@ -51,7 +51,8 @@
 				counter--;
 				$("#silenceAlert").prop('value', '('+counter+')');
 				if (counter==0) {
-					$("#silenceAlertDiv").css("display","none");
+					//$("#silenceAlertDiv").css("display","none");
+					$("#silenceAlertDiv").hide();
 					$("#silenceAlert").prop('value', 'Silence');
 					$("#silenceAlert").prop("disabled",false);
 					clearInterval(handle);
@@ -63,24 +64,24 @@
 		});
 
 		$('#toggleCook').click(function(){
+			//alert($('#smoker').val());
 			$.ajax({
 				url: 'togglecook.php',
 				type: 'POST',
 				data: $("#alertsForm").serialize(),
 				success: function(data) {
-					if (data=='Start Cook')
-					{
+					if (data=='Start Cook') {
 						$('#toggleCook').prop('value',data);
 						$('#toggleCook').removeClass().addClass("btn btn-lg btn-success");
-						$('#alertsDiv').css("display","block");
+						//$('#alertsDiv').css("display","block");
+						$('#alertsDiv').show();
 						noSleep.disable();
 						allowedToSleep=true;
-					}
-					else
-					{
+					} else {
 						$('#toggleCook').prop('value',data);
 						$('#toggleCook').removeClass().addClass("btn btn-lg btn-danger");
-						$('#alertsDiv').css("display","none");
+						//$('#alertsDiv').css("display","none");
+						$('#alertsDiv').hide();
 						if (allowedToSleep) {
 							noSleep.enable();
 							allowedToSleep=false;
@@ -88,14 +89,14 @@
 					}
 				},
 			});
-			$('#silenceAlertDiv').css("display","none");
+			//$('#silenceAlertDiv').css("display","none");
+			$('#silenceAlertDiv').hide();
 		});
 
 		var callAjax = function(){
 			$.ajax({
-				url:'togglecook.php',
+				url:'interval.php',
 				type:'POST',
-				data: 'p1=interval',
 				success:function(data){
 					if(data=='Start Cook') {
 						$('#toggleCook').prop('value',data);
@@ -121,11 +122,13 @@
 				success:function(data){
 					if(data=='alert' && silenceAlerts==false) {
 						audio.play();
-						$("#silenceAlertDiv").css("display","block");
+						//$("#silenceAlertDiv").css("display","block");
+						$("#silenceAlertDiv").show();
 					} else {
 						audio.pause();
 						if (silenceAlerts==false) {
-							$("#silenceAlertDiv").css("display","none");
+							//$("#silenceAlertDiv").css("display","none");
+							$("#silenceAlertDiv").hide();
 						}
 					}
 				}
@@ -184,7 +187,9 @@
 				$keepAwake="noSleep.enable(); allowedToSleep=false;";
 			} else {
 				$keepAwake="noSleep.disable(); allowedToSleep=true;";
+			}
 
+			if (empty($pids)) {
 				$query="SELECT * FROM smokers ORDER BY id DESC;";
 				$smokersList=$database->query($query);
 			}
@@ -203,11 +208,12 @@
 	   	    <?php } ?>
 	   	    <?php $database->close(); ?>
 	   	    </select>
-	   		<label for="pitLow">Pit Low:</label><input type="number" class="form-control" name="pitLow" id="pitLow" min="1" max="500" value=<?=$pL?>>
-	   		<label for="pitHigh">Pit High:</label><input type="number" class="form-control" name="pitHi" id="pitHi" min="1" max="500" value=<?=$pH?>>
-	   		<label for="foodLow">Food Low:</label><input type="number" class="form-control" name="foodLow" id="foodLow" min="1" max="500" value=<?=$fL?>>
-	   		<label for="foodHigh">Food High:</label><input type="number" class="form-control" name="foodHi" id="foodHi" min="1" max="500" value=<?=$fH?>>
-	   		<label for="alertEmail">Send To:</label><input type="email" class="form-control" name="alertEmail" id="alertEmail" value=<?=$email?>>
+                    <br />
+	   	    <label for="pitLow">Pit Low:</label><input type="number" class="form-control" name="pitLow" id="pitLow" min="1" max="500" value=<?=$pL?>>
+	   	    <label for="pitHigh">Pit High:</label><input type="number" class="form-control" name="pitHi" id="pitHi" min="1" max="500" value=<?=$pH?>>
+	   	    <label for="foodLow">Food Low:</label><input type="number" class="form-control" name="foodLow" id="foodLow" min="1" max="500" value=<?=$fL?>>
+	   	    <label for="foodHigh">Food High:</label><input type="number" class="form-control" name="foodHi" id="foodHi" min="1" max="500" value=<?=$fH?>>
+	   	    <label for="alertEmail">Send To:</label><input type="email" class="form-control" name="alertEmail" id="alertEmail" value=<?=$email?>>
 	   	   </div>
 	   	  </div>
 	   	 </form>
@@ -217,7 +223,7 @@
         </div>
         <div class="col-md-12" id="silenceAlertDiv" style="display:none">
 		 <input class="btn btn-lg btn-danger" type="button" value="Silence" id="silenceAlert">
-        </div>
+        </div><br />
       </div>
     </div> <!-- /container -->
     <?php require 'footer.php';?>
