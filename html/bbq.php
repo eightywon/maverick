@@ -51,7 +51,7 @@
   </head>
   <body>
    <div id='chart_div' align=center></div><br />
-   <center>Last updated: <?=date('l, F jS, Y @ h:ia', strtotime($time));?></center>
+   <center><?= ($time ? 'Last updated: '.date('l, F jS, Y @ h:ia', strtotime($time)) : 'There isn\'t anything cooking right now.'); ?></center>
   </body>
 </html>
 
