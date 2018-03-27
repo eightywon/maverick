@@ -15,7 +15,7 @@
 
 	if ($_POST['reqType']=="temps") {
 		if ($cookID==$activeCook) {
-		       	$single=Database::selectSingle('select probe1,probe2,time from readings where cookid='.$cookID.' limit 1',$pdo);
+		       	$single=Database::selectSingle('select probe1,probe2,time from readings where cookid='.$cookID.' order by time desc limit 1',$pdo);
 			$temps['probe1']=$single['probe1'];
 			$temps['probe2']=$single['probe2'];
 			$when=strtotime($single['time']);
