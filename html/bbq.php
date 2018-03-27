@@ -7,7 +7,7 @@
         $db=Database::getInstance();
         $pdo=$db->getConnection();
 
-	$single=Database::selectSingle('select probe1,probe2,time from readings where cookid='.$_COOKIE['cookid'].' order by time desc limit 1',$pdo);
+	$single=Database::selectSingle("select probe1,probe2,time from readings where cookid=".$_COOKIE['cookID']." order by time desc limit 1;",$pdo);
 	$probe1=$single['probe1'];
 	$probe2=$single['probe2'];
 	$time=$single['time'];
