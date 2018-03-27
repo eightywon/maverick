@@ -53,6 +53,7 @@
 				if (counter==0) {
 					//$("#silenceAlertDiv").css("display","none");
 					$("#silenceAlertDiv").hide();
+					$("#alertType").html('');
 					$("#silenceAlert").prop('value', 'Silence');
 					$("#silenceAlert").prop("disabled",false);
 					clearInterval(handle);
@@ -64,7 +65,6 @@
 		});
 
 		$('#toggleCook').click(function(){
-			//alert($('#smoker').val());
 			$.ajax({
 				url: 'togglecook.php',
 				type: 'POST',
@@ -89,8 +89,8 @@
 					}
 				},
 			});
-			//$('#silenceAlertDiv').css("display","none");
 			$('#silenceAlertDiv').hide();
+			$('#alertType').html("");
 		});
 
 		var callAjax = function(){
@@ -120,15 +120,17 @@
 				type:'POST',
 				data: 'p1=alerts',
 				success:function(data){
-					if(data=='alert' && silenceAlerts==false) {
+					if(data!='' && silenceAlerts==false) {
 						audio.play();
 						//$("#silenceAlertDiv").css("display","block");
 						$("#silenceAlertDiv").show();
+						$("#alertType").html(data);
 					} else {
 						audio.pause();
 						if (silenceAlerts==false) {
 							//$("#silenceAlertDiv").css("display","none");
 							$("#silenceAlertDiv").hide();
+							$("#alertType").html("");
 						}
 					}
 				}
@@ -218,12 +220,18 @@
 	   	  </div>
 	   	 </form>
         </div><br />
-        <div class="col-md-12">
+        <div class="row">
          <input class="<?=$btnClass?>" type="submit" value="<?=$val?>" id="toggleCook">
-        </div>
-        <div class="col-md-12" id="silenceAlertDiv" style="display:none">
-		 <input class="btn btn-lg btn-danger" type="button" value="Silence" id="silenceAlert">
         </div><br />
+        <div class="row" id="silenceAlertDiv" style="display:none">
+	 <input class="btn btn-lg btn-danger" type="button" value="Silence" id="silenceAlert">
+        </div>
+        <div class="row">
+         <div class="col-md-2">
+          <p id="alertType" class="h2 bg-danger"></p>
+         </div>
+         <div class="col-md-10">&nbsp;</div>
+        </div>
       </div>
     </div> <!-- /container -->
     <?php require 'footer.php';?>

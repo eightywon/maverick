@@ -47,10 +47,18 @@
 		});
 
 		$("#showFood").change(function() {
+			$('#chart_div').html('');
+			$('#toggleLines').hide();
+			$('#selectCook').hide();
+			$('.loading').show();
 			refreshChart();
 		});
 
 		$("#showPit").change(function() {
+			$('#chart_div').html('');
+			$('#toggleLines').hide();
+			$('#selectCook').hide();
+			$('.loading').show();
 			refreshChart();
 		});
 
@@ -185,7 +193,42 @@
 					}
 				});
 			}
-			});
+		});
+
+		/*
+		//future development to add notes to cook
+		chart.setAction({
+			id: 'addNote',
+			text: 'X - add note',
+			action: function() {
+				selection=chart.getSelection();
+				dtstring=data.getFormattedValue(selection[0].row,0);
+				$.ajax({
+					url: 'delpoint.php',
+					type:'POST',
+					data: {'cookid': $("#cookid").val(), 'time': dtstring},
+					success:function(data){
+						if (data!='fail') {
+							$('#chart_div').html('');
+							$('#toggleLines').hide();
+							$('#selectCook').hide();
+							$('.loading').show();
+							$.ajax({
+								url: "getdata.php",
+								data: {'reqType': 'chart', 'cookid': $("#cookid").val()},
+								type: "POST",
+								dataType: "json",
+								async: true,
+								success:function(data) {
+									drawChart(data);
+								}
+							});
+						} else { alert('failed');}
+					}
+				});
+			}
+		});
+		*/
 
 		//show or hide the food or pit graphs based on user input
 		if (!$("#showPit").is(":checked") || !$("#showFood").is(":checked")) {

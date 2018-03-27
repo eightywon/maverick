@@ -60,10 +60,10 @@
 				$smoker=$_POST['smoker'];
 				$query="UPDATE cooks SET smoker='".$smoker."' WHERE id=".$activeCook.";";
 				if (isset($_POST["alertEmail"])) {
-					$pL=$_POST['pitLow'];
-					$pH=$_POST['pitHi'];
-					$fL=$_POST['foodLow'];
-					$fH=$_POST['foodHi'];
+					($_POST['pitLow']!='' ? $pL=$_POST['pitLow'] : $pL=0);
+					($_POST['pitHi']!='' ? $pH=$_POST['pitHi'] : $pH=0);
+					($_POST['foodLow']!='' ? $fL=$_POST['foodLow'] : $fL=0);
+					($_POST['foodHi']!='' ? $fH=$_POST['foodHi'] : $fH=0);
 					$email=$_POST['alertEmail'];
 					$query="UPDATE cooks SET smoker='".$smoker."',pitLow='".$pL."',pitHi='".$pH."',foodLow='".$fL."',foodHi='".$fH."',email='".$email."' WHERE id=".$activeCook.";";
 				}
@@ -79,28 +79,11 @@
 			$fH=$database->querySingle('SELECT foodHi FROM cooks WHERE id='.$activeCook.';');
 			$probe1=$database->querySingle('SELECT probe1 FROM readings WHERE cookid='.$activeCook.' ORDER BY time DESC LIMIT 1;');
 			$probe2=$database->querySingle('SELECT probe2 FROM readings WHERE cookid='.$activeCook.' ORDER BY time DESC LIMIT 1;');
-
-			$flag=false;
-			if (($probe1>0 && ($probe1>=$fH || $probe1<=$fL)) || ($probe2>0 && ($probe2>=$pH || $probe2<=$pL))) {
-				echo "alert";
-			}
-			/*
-			if (($probe1>=$fH || $probe1<=$fL) || ($probe2>=$pH || $probe2<=$pL)) {
-				echo "alert";
-			}
-			*/
+			echo ($probe1>0 && $fH>0 && $probe1>=$fH) ? "Food High: ".$probe1 : "";
+			echo ($probe1>0 && $fL>0 && $probe1<=$fL) ? "Food Low: ".$probe1 : "";
+			echo ($probe2>0 && $pH>0 && $probe2>=$pH) ? "Pit High: ".$probe2 : "";
+			echo ($probe2>0 && $pL>0 && $probe2<=$pL) ? "Pit Low: ".$probe2 : "";
 		}
-	} /*else if ($_POST["p1"]=="interval") {
-		if (!empty($pids)) {
-			echo "Stop Cook";
-                        if ($result=$database->query($query)) {
-                                while($row=$result->fetchArray()) {
-					setcookie("cookID", $row['id']);
-                                }
-                        }
-		} else {
-			echo "Start Cook";
-		}
-	}*/
+	}
 	$database->close();
 ?>
