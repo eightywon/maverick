@@ -15,22 +15,50 @@ Raspberry PI
 GPIO Pinout (physical pin numbers):  
 2 (5v) - to 5v pin on receiver  
 6 (GND) - to GND on receiver  
-8 (BCM14 TXD) - to DATA on receiver  
+10 (BCM15 RXD) - to DATA on receiver  
 
-Install steps as of 3/2018 (Raspbian stretch lite version November 2017) (work in progress):
-1. update, dist-upgrade
-2. sudo rasp-config, usual setup, then 5 - Interfacing Options, P6 - Serial, No, Yes
-3. sudo apt-get install git
-4. git clone https://github.com/eightywon/maverick
-5. git clone git://git.drogon.net/wiringPi, cd ~/wiringPi ./build
-6. sudo apt-get install libsqlite3-dev, sqlite3
-7. sudo apt-get install nginx
-8. sudo apt-get install php-fpm, configure for nginx: https://www.raspberrypi.org/documentation/remote-access/web-server/nginx.md
-9. sudo apt-get install php-sqlite3
-10. sudo visudo, add "www-data ALL=(ALL) NOPASSWD: /var/www/html/maverick.sh, /bin/kill" as last line
-11. copy html files to /var/www/html/
-12. sudo sqlite3 -init maverick/db.script /var/www/html/the.db
-13. gcc -o /var/www/html/maverick maverick.c -lwiringPi -lsqlite3
+Install steps as of 4/2018 (Raspbian stretch lite version March 2018) (work in progress):
+1. Download Raspbian Stretch Lite - https://www.raspberrypi.org/downloads/raspbian/
+2. Unzip img, burn with Etcher - https://etcher.io/
+3. Insert SD card, connect HDMI and keyboard to pi, power on
+4. Log in: pi, raspberry
+5. sudo raspi-config, 2 - Network Config, N1 (set hostname if desired), N2 (configure wifi)
+6. Reboot
+7. sudo apt-get update, then sudo apt-get dist-upgrade
+8. sudo raspi-config
+  a. 1 - change password (if desired)
+  b. 4 - Localisation options (if desired)
+  c. 5 - Interfacing options
+     1. P2 - Enable SSH
+     2. P6 - Turn off shell interface over serial (no to shell interface, yes to enable serial HW)
+9. Reboot
+10. sudo apt-get install git (may have to sudo apt-get updated again first)
+11. git clone https://github.com/eightywon/maverick
+12. Install wiringPi
+   a. git clone git://git.drogon.net/wiringPi
+   b. cd ~/wiringPi
+   c. ./build
+   d. gpio -v to verify install
+13. sudo apt-get install nginx 
+14. sudo apt-get install libsqlite3-dev sqlite3
+15. Install php-fpm and sqlite3 php library
+   a. sudo apt-get install php-fpm
+   b. sudo apt-get install php-sqlite3
+   c. configure for nginx (ENABLE PHP IN NGINX section): https://www.raspberrypi.org/documentation/remote-access/web-server/nginx.md
+16. Copy maverick html files to nginx web root
+   a. cd ~/maverick/html
+   b. sudo cp -r * /var/www/html
+17. Create the database
+   a. cd ~/maverick
+   b. sudo sqlite3 -init ./db.script /var/www/html/the.db
+   c. .fullschema to verify the db
+   d. .quit to exit     
+18. Build the maverick executable
+   a. cd ~/maverick
+   b. sudo gcc -o /var/www/html/maverick maverick.c -lwiringPi -lsqlite3
+19. Enable nginx user www-data to execute and kill maverick executable
+   a. sudo visudo
+   b. add "www-data ALL=(ALL) NOPASSWD: /var/www/html/maverick.sh, /bin/kill" as last line
 
 --
 
