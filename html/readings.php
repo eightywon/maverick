@@ -1,6 +1,6 @@
 <html>
  <head>
-  <meta http-equiv="refresh" content="20;URL='readings.php'">
+  <meta http-equiv="refresh" content="5;URL='readings.php'">
  </head>
  <body>
 	<?php

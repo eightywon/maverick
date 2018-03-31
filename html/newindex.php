@@ -74,9 +74,7 @@
         setInterval(interval,1000);
 
         getWeather=function() {
-          gotWeather=false;
-          $("#weatherIcon").removeClass("fa fa-sun");
-          $("#weatherIcon").addClass("fa fa-spinner fa-spin");
+          setWeatherSpinner(true);
           getCookie();
           $.ajax({
             url: "http://api.wunderground.com/api/"+apiKey+"/forecast/q/"+zipCode+".json",
@@ -85,19 +83,19 @@
             success: function(json) {
               console.log(json);
               if (json.forecast) {
-                $("#wHigh").html("&nbsp;"+json.forecast.simpleforecast.forecastday[0].high.fahrenheit+"&deg;");
-                $("#wLow").html("&nbsp;"+json.forecast.simpleforecast.forecastday[0].low.fahrenheit+"&deg;");
-                $("#wPrecipitation").html("&nbsp;"+json.forecast.simpleforecast.forecastday[0].qpf_allday.in+"''");
-                $("#wDesc0").html("<b>"+json.forecast.txt_forecast.forecastday[0].title+"</b>: &nbsp;"+
+                $("#wthrHigh").html("&nbsp;"+json.forecast.simpleforecast.forecastday[0].high.fahrenheit+"&deg;");
+                $("#wthrLow").html("&nbsp;"+json.forecast.simpleforecast.forecastday[0].low.fahrenheit+"&deg;");
+                $("#wthrPrecipitation").html("&nbsp;"+json.forecast.simpleforecast.forecastday[0].qpf_allday.in+"''");
+                $("#wthrDesc0").html("<b>"+json.forecast.txt_forecast.forecastday[0].title+"</b>: &nbsp;"+
                                         json.forecast.txt_forecast.forecastday[0].fcttext);
-                $("#wDesc1").html("<b>"+json.forecast.txt_forecast.forecastday[1].title+"</b>: &nbsp;"+
+                $("#wthrDesc1").html("<b>"+json.forecast.txt_forecast.forecastday[1].title+"</b>: &nbsp;"+
                                         json.forecast.txt_forecast.forecastday[1].fcttext);
-                $("#wDesc2").html("<b>"+json.forecast.txt_forecast.forecastday[2].title+"</b>: &nbsp;"+
+                $("#wthrDesc2").html("<b>"+json.forecast.txt_forecast.forecastday[2].title+"</b>: &nbsp;"+
                                         json.forecast.txt_forecast.forecastday[2].fcttext);
-                $("#weatherIcon").removeClass("fa fa-spinner fa-spin");
-                $("#weatherIcon").addClass("fa fa-sun");
+                setWeatherSpinner(false);
               } else if (json.response) {
-                $("#wLocation").html(" - Invalid API Key - <a href=\"#\" onclick=\"document.getElementById('settingsModal').style.display='block'\"><u>Click here to fix</u></a>");
+                $("[id^=wthr]").html("");
+                $("#wLocation").html(" - Invalid API Key - <span onclick=\"document.getElementById('settingsModal').style.display='block'\" style=\"cursor:pointer\"><u>Click here to fix</u></span>");
               }
             },
             error: function(data) {
@@ -112,15 +110,15 @@
             success: function(json) {
               console.log(json);
               if (json.current_observation) {
-                $("#wNow").html("&nbsp;"+json.current_observation.temp_f+"&deg;");
+                $("#wthrNow").html("&nbsp;"+json.current_observation.temp_f+"&deg;");
                 $("#wLocation").html(" - "+json.current_observation.display_location.full);
-                $("#wWind").html("&nbsp;"+json.current_observation.wind_string);
-                $("#wFeelsLike").html("&nbsp;"+json.current_observation.feelslike_f+"&deg;");
-                $("#wRelHumidity").html("&nbsp;"+json.current_observation.relative_humidity);
-                $("#weatherIcon").removeClass("fa fa-spinner fa-spin");
-                $("#weatherIcon").addClass("fa fa-sun");
+                $("#wthrWind").html("&nbsp;"+json.current_observation.wind_string);
+                $("#wthrFeelsLike").html("&nbsp;"+json.current_observation.feelslike_f+"&deg;");
+                $("#wthrRelHumidity").html("&nbsp;"+json.current_observation.relative_humidity);
+                setWeatherSpinner(false);
               } else if (json.response) {
-                $("#wLocation").html(" - Invalid API Key -  <a href=\"#\" onclick=\"document.getElementById('settingsModal').style.display='block'\"><u>Click here to fix</u></a>");
+                $("[id^=wthr]").html("");
+                $("#wLocation").html(" - Invalid API Key - <span onclick=\"document.getElementById('settingsModal').style.display='block'\" style=\"cursor:pointer\"><u>Click here to fix</u></span>");
               }
             },
             error: function(data) {
@@ -130,10 +128,42 @@
         }//getWeather
         getWeather();
 
-        $("#submitSettingsForm").click(function(event){
+        function setWeatherSpinner(state) {
+          if (state) {
+            $("#weatherIcon").removeClass("fa fa-sun");
+            $("#weatherIcon").addClass("fa fa-spinner fa-spin");
+          } else {
+            $("#weatherIcon").removeClass("fa fa-spinner fa-spin");
+            $("#weatherIcon").addClass("fa fa-sun");
+          }
+        }
+
+        $("#submitSettingsForm").click(function(event) {
           event.preventDefault(); //kills submit button default event processing
           $.post("newindex.php",$("settingsForm").serialize());
         });
+
+        //click outside closes modal
+        var modal=document.getElementById("settingsModal");
+        window.onclick=function(event) {
+          if (event.target==modal) {
+            modal.style.display="none";
+            //w3_close();
+          }
+        }
+
+        //escape closes modal
+        window.onkeyup=function(event) {
+          if (event.keyCode==27) {
+            $("#settingsModal:visible").hide();
+          }
+        }
+
+        /* example of dynamically adding rows to table
+        var newRecentCook="<tr>\n  <td><i class='material-icons w3-large'>whatshot</i></td>\n"+
+                          "  <td>It's a new cook!</td>\n  <td><i>now</i></td>\n  </tr>\n";
+        $("#recentCooks tbody").append(newRecentCook);
+        */
       }); //jquery loaded
     </script>
   </head>
@@ -151,7 +181,7 @@
         <h4><b><i class="fa fa-fire"></i>&nbsp; Maverick ET-732</b></h4>
       </div>
       <div class="w3-bar-block" style="padding-top:8px">
-        <a href="#" id="getWeather" class="w3-bar-item w3-button w3-padding"><i class="fa fa-chart-pie fa-fw"></i>&nbsp; Dashboard</a>
+        <a href="/" id="getWeather" class="w3-bar-item w3-button w3-padding"><i class="fa fa-chart-pie fa-fw"></i>&nbsp; Dashboard</a>
         <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-utensils fa-fw"></i>&nbsp; Cooks</a>
         <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-bell fa-fw"></i>&nbsp; Alerts</a>
         <a href="#" class="w3-bar-item w3-button w3-padding"><i class="material-icons fa-fw" style="font-size:15px">whatshot</i>&nbsp; Smokers</a>
@@ -161,7 +191,7 @@
 
     <!-- Settings modal -->
     <div id="settingsModal" class="w3-modal">
-      <div class="w3-modal-content w3-large" style="margin-top:50px">
+      <div class="w3-modal-content w3-large" style="margin-top:50px" tabindex="-1">
         <header class="w3-container w3-black">
           <span onclick="document.getElementById('settingsModal').style.display='none'" class="w3-btn w3-right"
                 style="padding-top:3px;padding-bottom:3px;padding-left:8px;padding-right:8px">&#10006;</span>
@@ -172,11 +202,12 @@
             <input class="w3-input w3-border" type="text" id="zipCode" name="zipCode">
             <label>Forecast Zip Code</label><br><br>
             <input class="w3-input w3-border" type="text" id="apiKey" name="apiKey">
-            <label>Weather Underground API Key</label><br><br>
+            <label>Weather Underground API Key (<a href="https://www.wunderground.com/weather/api/d/pricing.html"
+                                                         target="blank">Need one?</a>)</label><br><br>
             <button class="w3-btn w3-black w3-right" id="submitSettingsForm"
                     onclick="setCookie(document.getElementById('settingsForm'));
                     document.getElementById('settingsModal').style.display='none';
-                    getWeather();w3_open();">Submit</button>
+                    getWeather();w3_close();">Submit</button>
           </form>
         </div>
       </div>
@@ -195,25 +226,25 @@
 
       <!-- Forecast card -->
       <div class="w3-container w3-margin-bottom">
-        <div class="w3-row w3-card-4 w3-red">
+        <div class="w3-row w3-card-4 w3-orange">
           <span onclick="this.parentElement.style.display='none'" class="w3-btn w3-right"
                 style="padding-top:3px;padding-bottom:3px;padding-left:8px;padding-right:8px">&#10006;</span>
           <div class="w3-padding w3-xlarge" style="padding-bottom:0px !important">
             <i id="weatherIcon" class="fa fa-sun"></i> Forecast <span id="wLocation"></span>
           </div>
           <div class="w3-third w3-padding" style="padding-top:4px !important">
-            <div><b>Now:</b> <span id="wNow"></span></div>
-            <div><b>Feels Like:</b> <span id="wFeelsLike"></span></div>
-            <div><b>High:</b> <span id="wHigh"></span></div>
-            <div><b>Low:</b> <span id="wLow"></span></div>
-            <div><b>Precipitation:</b> <span id="wPrecipitation"></span></div>
-            <div><b>Relative Humidity:</b> <span id="wRelHumidity"></span></div>
-            <div><b>Wind:</b> <span id="wWind"></span></div>
+            <div><b>Now:</b> <span id="wthrNow"></span></div>
+            <div><b>Feels Like:</b> <span id="wthrFeelsLike"></span></div>
+            <div><b>High:</b> <span id="wthrHigh"></span></div>
+            <div><b>Low:</b> <span id="wthrLow"></span></div>
+            <div><b>Precipitation:</b> <span id="wthrPrecipitation"></span></div>
+            <div><b>Relative Humidity:</b> <span id="wthrRelHumidity"></span></div>
+            <div><b>Wind:</b> <span id="wthrWind"></span></div>
           </div>
           <div id="weatherLoading" class="w3-rest w3-padding" style="padding-top:4px !important">
-            <div id="wDesc0" class=""></div><br>
-            <div id="wDesc1" class=""></div><br>
-            <div id="wDesc2" class=""></div><br>
+            <div id="wthrDesc0" class=""></div><br>
+            <div id="wthrDesc1" class=""></div><br>
+            <div id="wthrDesc2" class=""></div><br>
           </div>
         </div>
       </div>
@@ -232,7 +263,7 @@
         </div>
         <div class="w3-quarter">
           <div class="w3-container w3-blue w3-padding-16">
-            <div class="w3-left"><i class="material-icons w3-xxxlarge">assignments</i></div>
+            <div class="w3-left"><i class="material-icons w3-xxxlarge" style="width:39px">assignments</i></div>
             <div class="w3-right">
               <h3>337</h3>
             </div>
@@ -252,7 +283,7 @@
         </div>
         <div class="w3-quarter">
           <div class="w3-container w3-orange w3-text-white w3-padding-16">
-            <div class="w3-left"><i class="material-icons w3-xxxlarge">check box</i></div>
+            <div class="w3-left"><i class="material-icons w3-xxxlarge" style="width:39px">check box</i></div>
             <div class="w3-right">
               <h3>12</h3>
             </div>
@@ -262,53 +293,42 @@
         </div>
       </div>
 
-      <div class="w3-panel w3-hide-small">
-         <div class="w3-row-padding" style="margin:0 -16px">
-          <div class="w3-third w3-container">
-            <h5>Weather</h5>
-          </div>
-          <div class="w3-twothird">
-            <h5>Feeds</h5>
-            <table class="w3-table w3-striped w3-white">
-              <tr>
-                <td><i class="fa fa-user w3-text-blue w3-large"></i></td>
-                <td>New record, over 90 views.</td>
-                <td><i>10 mins</i></td>
-              </tr>
-              <tr>
-                <td><i class="fa fa-bell w3-text-red w3-large"></i></td>
-                <td>Database error.</td>
-                <td><i>15 mins</i></td>
-              </tr>
-              <tr>
-                <td><i class="fa fa-users w3-text-yellow w3-large"></i></td>
-                <td>New record, over 40 users.</td>
-                <td><i>17 mins</i></td>
-              </tr>
-              <tr>
-                <td><i class="fa fa-comment w3-text-red w3-large"></i></td>
-                <td>New comments.</td>
-                <td><i>25 mins</i></td>
-              </tr>
-              <tr>
-                <td><i class="fa fa-bookmark w3-text-blue w3-large"></i></td>
-                <td>Check transactions.</td>
-                <td><i>28 mins</i></td>
-              </tr>
-              <tr>
-                <td><i class="fa fa-laptop w3-text-red w3-large"></i></td>
-                <td>CPU overload.</td>
-                <td><i>35 mins</i></td>
-              </tr>
-              <tr>
-                <td><i class="fa fa-share-alt w3-text-green w3-large"></i></td>
-                <td>New shares.</td>
-                <td><i>39 mins</i></td>
-              </tr>
-            </table>
-          </div>
+      <!-- Recent cooks panel -->
+      <?php
+        include_once('db.php');
+        $db=Database::getInstance();
+        $pdo=$db->getConnection();
+        $query="select cooks.id,cooks.end,meat.icon from cooks left join meat on cooks.id=meat.cookid order by cooks.end desc limit 20";
+        $results=Database::select($query,$pdo);
+      ?>
+      <div class="w3-panel">
+        <div class="w3-row-padding" style="margin:0 -16px">
+          <h5>Recent Cooks</h5>
+          <table id="recentCooks" class="w3-table w3-striped w3-white">
+          <?php
+          if ($result!==false) {
+            $i=0;
+            foreach ($results as $row) {
+              $i++;
+              echo "            <tr>\n";
+              echo "              <td><img src='".$row['icon']."' height=18 width=22></img></td>\n";
+              echo "              <td>".$row['end']."</td>\n";
+              echo "              <td>ok</td>\n";
+              echo "            </tr>\n";
+            }
+          }
+          ?>
+            <!--
+            <tr>
+              <td><i class="fa fa-comment w3-text-red w3-large"></i></td>
+              <td>New comments.</td>
+              <td><i>25 mins</i></td>
+            </tr>
+            -->
+          </table>
         </div>
       </div>
+
       <hr>
       <div class="w3-container">
         <h5>General Stats</h5>
