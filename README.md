@@ -17,48 +17,48 @@ GPIO Pinout (physical pin numbers):
 6 (GND) - to GND on receiver  
 10 (BCM15 RXD) - to DATA on receiver  
 
-Install steps as of 4/2018 (Raspbian stretch lite version March 2018) (work in progress):
-1. Download Raspbian Stretch Lite - https://www.raspberrypi.org/downloads/raspbian/
-2. Unzip img, burn with Etcher - https://etcher.io/
-3. Insert SD card, connect HDMI and keyboard to pi, power on
-4. Log in: pi, raspberry
-5. sudo raspi-config, 2 - Network Config, N1 (set hostname if desired), N2 (configure wifi)
-6. Reboot
-7. sudo apt-get update, then sudo apt-get dist-upgrade
-8. sudo raspi-config
-  a. 1 - change password (if desired)
-  b. 4 - Localisation options (if desired)
-  c. 5 - Interfacing options
-     1. P2 - Enable SSH
-     2. P6 - Turn off shell interface over serial (no to shell interface, yes to enable serial HW)
-9. Reboot
-10. sudo apt-get install git (may have to sudo apt-get updated again first)
-11. git clone https://github.com/eightywon/maverick
-12. Install wiringPi
-   a. git clone git://git.drogon.net/wiringPi
-   b. cd ~/wiringPi
-   c. ./build
-   d. gpio -v to verify install
-13. sudo apt-get install nginx 
-14. sudo apt-get install libsqlite3-dev sqlite3
-15. Install php-fpm and sqlite3 php library
-   a. sudo apt-get install php-fpm
-   b. sudo apt-get install php-sqlite3
-   c. configure for nginx (ENABLE PHP IN NGINX section): https://www.raspberrypi.org/documentation/remote-access/web-server/nginx.md
-16. Copy maverick html files to nginx web root
-   a. cd ~/maverick/html
-   b. sudo cp -r * /var/www/html
-17. Create the database
-   a. cd ~/maverick
-   b. sudo sqlite3 -init ./db.script /var/www/html/the.db
-   c. .fullschema to verify the db
-   d. .quit to exit     
-18. Build the maverick executable
-   a. cd ~/maverick
-   b. sudo gcc -o /var/www/html/maverick maverick.c -lwiringPi -lsqlite3
-19. Enable nginx user www-data to execute and kill maverick executable
-   a. sudo visudo
-   b. add "www-data ALL=(ALL) NOPASSWD: /var/www/html/maverick.sh, /bin/kill" as last line
+Install steps as of 4/2018 (Raspbian stretch lite version March 2018) (work in progress):  
+1. Download Raspbian Stretch Lite - https://www.raspberrypi.org/downloads/raspbian/  
+2. Unzip img, burn with Etcher - https://etcher.io/  
+3. Insert SD card, connect HDMI and keyboard to pi, power on  
+4. Log in: pi, raspberry  
+5. sudo raspi-config, 2 - Network Config, N1 (set hostname if desired), N2 (configure wifi)  
+6. Reboot  
+7. sudo apt-get update, then sudo apt-get dist-upgrade  
+8. sudo raspi-config  
+  a. 1 - change password (if desired)  
+  b. 4 - Localisation options (if desired)  
+  c. 5 - Interfacing options  
+     1. P2 - Enable SSH  
+     2. P6 - Turn off shell interface over serial (no to shell interface, yes to enable serial HW)  
+9. Reboot  
+10. sudo apt-get install git (may have to sudo apt-get updated again first)  
+11. git clone https://github.com/eightywon/maverick  
+12. Install wiringPi  
+   a. git clone git://git.drogon.net/wiringPi  
+   b. cd ~/wiringPi  
+   c. ./build  
+   d. gpio -v to verify install  
+13. sudo apt-get install nginx   
+14. sudo apt-get install libsqlite3-dev sqlite3  
+15. Install php-fpm and sqlite3 php library  
+   a. sudo apt-get install php-fpm  
+   b. sudo apt-get install php-sqlite3  
+   c. configure for nginx (ENABLE PHP IN NGINX section): https://www.raspberrypi.org/documentation/remote-access/web-server/nginx.md  
+16. Copy maverick html files to nginx web root  
+   a. cd ~/maverick/html  
+   b. sudo cp -r * /var/www/html  
+17. Create the database  
+   a. cd ~/maverick  
+   b. sudo sqlite3 -init ./db.script /var/www/html/the.db  
+   c. .fullschema to verify the db  
+   d. .quit to exit  
+18. Build the maverick executable  
+   a. cd ~/maverick  
+   b. sudo gcc -o /var/www/html/maverick maverick.c -lwiringPi -lsqlite3  
+19. Enable nginx user www-data to execute and kill maverick executable  
+   a. sudo visudo  
+   b. add "www-data ALL=(ALL) NOPASSWD: /var/www/html/maverick.sh, /bin/kill" as last line  
 
 --
 
