@@ -1,3 +1,13 @@
+todo:  
+1. Replace references to wiringPi with pigpio steps - http://abyz.me.uk/rpi/pigpio/download.html  
+2. Add "PRAGMA journal_mode=WAL;" to db.script to activate write-ahead logging mode in the sqlite DB which helps reduces write conflicts 
+3. Possibly update with additional hardware stuff  
+   a. Dipole antenna  
+   b. Other reciever modules  
+   c. Case options  
+
+--  
+
 Use a Raspberry Pi to monitor Maverick ET-732 temperature readings and provide an interface to access that information.
 
 Back end software (maverick.c) sniffs the 433mhz radio signal from the Maverick ET-732 (and likely other models), which transmits temprerature readings every 12 seconds, and stores those readings to a sqlite3 database. Front end software (php on nginx) provides an interface to start/stop cooks, manage cook related information, and view temp gauges and graphs
