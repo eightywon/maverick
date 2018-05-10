@@ -1,3 +1,13 @@
+todo:  
+1. Replace references to wiringPi with pigpio steps - http://abyz.me.uk/rpi/pigpio/download.html  
+2. Add "PRAGMA journal_mode=WAL;" to db.script to activate write-ahead logging mode in the sqlite DB which helps reduces write conflicts 
+3. Possibly update with additional hardware stuff  
+   a. Dipole antenna  
+   b. Other reciever modules  
+   c. Case options  
+
+--  
+
 Use a Raspberry Pi to monitor Maverick ET-732 temperature readings and provide an interface to access that information.
 
 Back end software (maverick.c) sniffs the 433mhz radio signal from the Maverick ET-732 (and likely other models), which transmits temprerature readings every 12 seconds, and stores those readings to a sqlite3 database. Front end software (php on nginx) provides an interface to start/stop cooks, manage cook related information, and view temp gauges and graphs
@@ -22,15 +32,15 @@ Install steps as of 4/2018 (Raspbian stretch lite version March 2018) (work in p
 2. Unzip img, burn with Etcher - https://etcher.io/  
 3. Insert SD card, connect HDMI and keyboard to pi, power on  
 4. Log in: pi, raspberry  
-5. sudo raspi-config, 2 - Network Config, N1 (set hostname if desired), N2 (configure wifi)  
+5. sudo raspi-config, 
+  a. 2 - Network Config, N1 (set hostname if desired), N2 (configure wifi)  
+  b. 5 - Interfacing options, P2 - Enable SSH  
 6. Reboot  
 7. sudo apt-get update, then sudo apt-get dist-upgrade  
 8. sudo raspi-config  
   a. 1 - change password (if desired)  
   b. 4 - Localisation options (if desired)  
-  c. 5 - Interfacing options  
-     1. P2 - Enable SSH  
-     2. P6 - Turn off shell interface over serial (no to shell interface, yes to enable serial HW)  
+  c. 5 - Interfacing options, P6 - Turn off shell interface over serial (no to shell interface, yes to enable serial HW)  
 9. Reboot  
 10. sudo apt-get install git (may have to sudo apt-get updated again first)  
 11. git clone https://github.com/eightywon/maverick  
