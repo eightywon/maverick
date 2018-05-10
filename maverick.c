@@ -9,14 +9,14 @@
 #include <sqlite3.h>
 #include <time.h>
 
-unsigned int volatile start_pulse_counter=0,detection_state=0,last_interrupt_micros=0,last_interrupt_millis;
+unsigned int volatile start_pulse_counter=0,detection_state=0,last_interrupt_millis;
 unsigned int data_array_index=0,data_array[13],shift_value=0,short_bit=0,add_1st_bit=1,current_byte=0;
 unsigned int current_bit=1,bit_count=0,save_array[13],last_db_write,cookID,probe1_array[6],probe2_array[6];
-unsigned int tsl_micros,bit_ok,i,pin_state,firstRead=1,goodData,badReadCount,time_since_last;
+unsigned int bit_ok,i,pin_state,firstRead=1,goodData,badReadCount,time_since_last;
 int probe1=0,probe2=0,prevProbe1=0,prevProbe2=0,rc,current_micros,current_millis;
 char *zErrMsg=0;
 unsigned int shortBitTick,transmissionCount,nibbleShift,nibbleOne,nibbleTwo;
-uint32_t toCheck;
+uint32_t toCheck,tsl_micros,last_interrupt_micros;
 
 sqlite3 *db;
 
