@@ -1,7 +1,5 @@
 todo:  
-1. Replace references to wiringPi with pigpio steps - http://abyz.me.uk/rpi/pigpio/download.html  
-2. Add "PRAGMA journal_mode=WAL;" to db.script to activate write-ahead logging mode in the sqlite DB which helps reduces write conflicts 
-3. Possibly update with additional hardware stuff  
+1. Possibly update with additional hardware stuff  
    a. Dipole antenna  
    b. Other reciever modules  
    c. Case options  
@@ -24,10 +22,10 @@ Raspberry PI
 
 GPIO Pinout (physical pin numbers):  
 2 (5v) - to 5v pin on receiver  
-6 (GND) - to GND on receiver  
-10 (BCM15 RXD) - to DATA on receiver  
+34 (GND) - to GND on receiver  
+31 (BCM6) - to DATA on receiver  
 
-Install steps as of 4/2018 (Raspbian stretch lite version March 2018) (work in progress):  
+Install steps as of 5/2018 (Raspbian stretch lite version March 2018) (work in progress):  
 1. Download Raspbian Stretch Lite - https://www.raspberrypi.org/downloads/raspbian/  
 2. Unzip img, burn with Etcher - https://etcher.io/  
 3. Insert SD card, connect HDMI and keyboard to pi, power on  
@@ -44,11 +42,14 @@ Install steps as of 4/2018 (Raspbian stretch lite version March 2018) (work in p
 9. Reboot  
 10. sudo apt-get install git (may have to sudo apt-get updated again first)  
 11. git clone https://github.com/eightywon/maverick  
-12. Install wiringPi  
-   a. git clone git://git.drogon.net/wiringPi  
-   b. cd ~/wiringPi  
-   c. ./build  
-   d. gpio -v to verify install  
+12. Install PIGPIO (see http://abyz.me.uk/rpi/pigpio/download.html)  
+   a. rm pigpio.zip  
+   b. sudo rm -rf PIGPIO  
+   c. get abyz.me.uk/rpi/pigpio/pigpio.zip  
+   d. unzip pigpio.zip  
+   e. cd PIGPIO  
+   f. make  
+   g. sudo make install  
 13. sudo apt-get install nginx   
 14. sudo apt-get install libsqlite3-dev sqlite3  
 15. Install php-fpm and sqlite3 php library  
@@ -72,48 +73,4 @@ Install steps as of 4/2018 (Raspbian stretch lite version March 2018) (work in p
 20. Set ownership/permissions on /var/www/html directory and contents  
    a. sudo chown www-data:www-data /var/www/html  
    b. sudo chown -R www-data:www-data /var/www/html/*  
-
---
-
-links/research/notes (not maintained):
-http://forums.adafruit.com/viewtopic.php?f=8&t=25414  
-http://wiki.openpicus.com/index.php?title=Wifi_bbq  
-http://www.raspberrypi.org/phpBB3/viewtopic.php?f=37&t=29650  
-http://www.raspberrypi.org/phpBB3/viewtopic.php?p=252739#p252739  
-http://openmicros.org/index.php/articles/94-ciseco-product-documentation/raspberry-pi/283-setting-up-my-raspberry-pi  
-sending and receiving via UART with minicom   
-http://www.raspberry-projects.com/pi/programming-in-c/uart-serial-port/using-the-uart  
-try this too http://www.raspberrypi.org/phpBB3/viewtopic.php?f=63&t=32953  
-http://elinux.org/Serial_port_programming  
-pic of pinout  
-http://eclipsesource.com/blogs/2012/10/17/serial-communication-in-java-with-raspberry-pi-and-rxtx/  
-right dev and pins to use  
-http://raspberrypihobbyist.blogspot.com/2012/08/raspberry-pi-serial-port.html  
-good stuff  
-http://ninjablocks.com/blogs/how-to/7506204-adding-433-to-your-raspberry-pi  
-http://www.raspberrypi.org/phpBB3/viewtopic.php?t=53425&p=408648  
-For later  
-http://www.cl.cam.ac.uk/projects/raspberrypi/tutorials/temperature/  
-http://www.raspberrypi.org/phpBB3/viewtopic.php?p=237517#p237517  
-http://www.raspberrypi.org/phpBB3/viewtopic.php?f=37&t=29650  
-compiling with mysql headers  
-http://www.raspberrypi.org/phpBB3/viewtopic.php?t=31394&p=393917  
-session control - how to recognize when  the maverick is turned off between smokes and start a new session  
-improve front-end - graphs, bbq-like temp gauges  
-how often to log to db? every time sniffed? once per minute/half minute? average all sniffs or just log most recent?  
-clean up code  
-http://stevenhickson.blogspot.com/2013/05/using-google-voice-c-api.html  
-http://forum.arduino.cc/index.php?topic=22052.0   
-http://www.tutorialspoint.com/sqlite/sqlite_c_cpp.htm  
-https://developers.google.com/chart/interactive/docs/php_example?csw=1  
-https://github.com/BjoernSch/MaverickBBQ/blob/master/maverick.py  
-https://forums.adafruit.com/viewtopic.php?f=8&t=25414&start=15  
-https://hackaday.com/2015/03/25/logic-noise-filters-and-drums/#more-150438  
-http://raspberrywebserver.com/sql-databases/set-up-an-sqlite-database-on-a-raspberry-pi.html  
-https://www.raspberrypi.org/documentation/remote-access/web-server/nginx.md  
-
-to allow pi to send alerts install postfix SMTP program and set up relay through comcast mail server like - http://forums.xfinity.com/t5/E-Mail-and-Xfinity-Connect-Help/Mac-OS-X-Proper-postfix-configuration-for-SMTP/m-p/1092577#M191652  
-
-launch from terminal- $sudo /var/www/html/maverick > ~/maverick.log &
-
 
