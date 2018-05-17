@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Maverick ET-732</title>
+    <title>BBQPi</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
@@ -54,6 +54,47 @@
         $("#apiKey").val(apiKey);
       }
       getCookie();
+
+      function showMaskPassword() {
+        var fld=document.getElementById("password");
+        if (fld.type=="password") {
+          fld.type="text";
+          $("#showPass").removeClass("fa fa-eye w3-right w3-xlarge");
+          $("#showPass").addClass("fa fa-eye-slash w3-right w3-xlarge");
+        } else {
+          fld.type="password";
+          $("#showPass").removeClass("fa fa-eye-slash w3-right w3-xlarge");
+          $("#showPass").addClass("fa fa-eye w3-right w3-xlarge");
+        }
+      }
+
+      function closeSettingsModal() {
+        $("#settingsModal:visible").hide();
+        document.getElementById("password").type="password";
+        $("#showPass").removeClass("fa fa-eye-slash w3-right w3-xlarge");
+        $("#showPass").addClass("fa fa-eye w3-right w3-xlarge");
+        document.getElementById("ssid").style.backgroundColor="";
+        document.getElementById("password").style.backgroundColor="";
+      }
+
+      function addWifi() {
+        var ssid=document.getElementById("ssid");
+        var pass=document.getElementById("password");
+        var ret=true;
+        if (ssid.value=="") {
+          ssid.style.backgroundColor="lightcoral";
+          ret=false;
+        } else {
+          ssid.style.backgroundColor="";
+        }
+        if (document.getElementById("password").value=="") {
+          pass.style.backgroundColor="lightcoral";
+          ret=false;
+        } else {
+          pass.style.backgroundColor="";
+        }
+        return ret;
+      }
 
       $(function() {
 
@@ -147,7 +188,7 @@
         var modal=document.getElementById("settingsModal");
         window.onclick=function(event) {
           if (event.target==modal) {
-            modal.style.display="none";
+            closeSettingsModal();
             //w3_close();
           }
         }
@@ -155,7 +196,7 @@
         //escape closes modal
         window.onkeyup=function(event) {
           if (event.keyCode==27) {
-            $("#settingsModal:visible").hide();
+            closeSettingsModal();
           }
         }
 
@@ -178,7 +219,7 @@
     <!-- Sidebar/menu -->
     <nav class="w3-sidebar w3-collapse w3-white w3-animate-left" style="z-index:3;width:300px;" id="mySidebar">
       <div id="sidebar_header" class="w3-container w3-bottombar w3-border-light-gray" style="padding-top:1px;padding-left:18px">
-        <h4><b><i class="fa fa-fire"></i>&nbsp; Maverick ET-732</b></h4>
+        <h4><b><i class="fa fa-fire"></i>&nbsp; BBQPi</b></h4>
       </div>
       <div class="w3-bar-block" style="padding-top:8px">
         <a href="/" id="getWeather" class="w3-bar-item w3-button w3-padding"><i class="fa fa-chart-pie fa-fw"></i>&nbsp; Dashboard</a>
@@ -193,21 +234,33 @@
     <div id="settingsModal" class="w3-modal">
       <div class="w3-modal-content w3-large" style="margin-top:50px" tabindex="-1">
         <header class="w3-container w3-black">
-          <span onclick="document.getElementById('settingsModal').style.display='none'" class="w3-btn w3-right"
+          <span onclick="closeSettingsModal();" class="w3-btn w3-right"
                 style="padding-top:3px;padding-bottom:3px;padding-left:8px;padding-right:8px">&#10006;</span>
           <h2>Settings</h2>
         </header>
         <div class="w3-container w3-padding">
-          <form id="settingsForm" class="w3-container">
+          <h3>Forecast Settings</h3>
+          <form id="forecastSettings" class="w3-container">
             <input class="w3-input w3-border" type="text" id="zipCode" name="zipCode">
             <label>Forecast Zip Code</label><br><br>
             <input class="w3-input w3-border" type="text" id="apiKey" name="apiKey">
             <label>Weather Underground API Key (<a href="https://www.wunderground.com/weather/api/d/pricing.html"
                                                          target="blank">Need one?</a>)</label><br><br>
-            <button class="w3-btn w3-black w3-right" id="submitSettingsForm"
-                    onclick="setCookie(document.getElementById('settingsForm'));
+            <button class="w3-btn w3-black w3-right" id="submitForecastSettings"
+                    onclick="setCookie(document.getElementById('forecastSettings'));
                     document.getElementById('settingsModal').style.display='none';
                     getWeather();w3_close();">Submit</button>
+          </form>
+        </div>
+        <div class="w3-container w3-padding">
+          <h3>Add Wifi Settings to BBQPi</h3>
+          <form id="wifiSettings" class="w3-container">
+            <input class="w3-input w3-border" type="text" id="ssid" name="ssid">
+            <label>SSID</label><br><br>
+            <input class="w3-input w3-border" type="password" id="password" name="password">
+            <label>Password</label><span class="fa fa-eye w3-right w3-xlarge" style="cursor:pointer;"
+                                    onclick="showMaskPassword();" id="showPass"></span><br><br>
+            <button class="w3-btn w3-black w3-right" id="submitWifiSettings" onclick="return addWifi();">Submit</button>
           </form>
         </div>
       </div>
@@ -221,7 +274,7 @@
 
       <!-- Header -->
       <header id="page_content_header" class="w3-container" style="padding-top:22px">
-        <h4><b><i class="fa fa-chart-pie"></i><span class="w3-hide-large"> Maverick ET-732</span> Dashboard</b></h4>
+        <h4><b><i class="fa fa-chart-pie"></i><span class="w3-hide-large"> BBQPi</span> Dashboard</b></h4>
       </header>
 
       <!-- Forecast card -->
