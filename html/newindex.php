@@ -255,9 +255,11 @@
         <div class="w3-container w3-padding">
           <h3>Add Wifi Settings to BBQPi</h3>
           <form id="wifiSettings" class="w3-container">
-            <input class="w3-input w3-border" type="text" id="ssid" name="ssid">
+            <input class="w3-input w3-border" type="text" id="ssid" name="ssid"
+             autocorrect="off" autocapitalize="none">
             <label>SSID</label><br><br>
-            <input class="w3-input w3-border" type="password" id="password" name="password">
+            <input class="w3-input w3-border" type="password" id="password"
+             name="password" autocorrect="off" autocapitalize="none">
             <label>Password</label><span class="fa fa-eye w3-right w3-xlarge" style="cursor:pointer;"
                                     onclick="showMaskPassword();" id="showPass"></span><br><br>
             <button class="w3-btn w3-black w3-right" id="submitWifiSettings" onclick="return addWifi();">Submit</button>
