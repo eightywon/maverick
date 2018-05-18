@@ -226,7 +226,8 @@
         <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-utensils fa-fw"></i>&nbsp; Cooks</a>
         <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-bell fa-fw"></i>&nbsp; Alerts</a>
         <a href="#" class="w3-bar-item w3-button w3-padding"><i class="material-icons fa-fw" style="font-size:15px">whatshot</i>&nbsp; Smokers</a>
-        <a class="w3-bar-item w3-button w3-padding" onclick="document.getElementById('settingsModal').style.display='block'"><i class="fa fa-cog fa-fw"></i>&nbsp; Settings</a><br><br>
+        <a class="w3-bar-item w3-button w3-padding" onclick="document.getElementById('settingsModal').style.display='block'"><i class="fa fa-cog fa-fw"></i>&nbsp; Settings</a>
+        <a class="w3-bar-item w3-button w3-padding" onclick="document.getElementById('wifiModal').style.display='block'"><i class="fa fa-cog fa-fw"></i>&nbsp; BBQPi Wifi</a>
       </div>
     </nav>
 
@@ -254,6 +255,73 @@
         </div>
         <div class="w3-container w3-padding">
           <h3>Add Wifi Settings to BBQPi</h3>
+          <form id="wifiSettings" class="w3-container">
+            <input class="w3-input w3-border" type="text" id="ssid" name="ssid"
+             autocorrect="off" autocapitalize="none">
+            <label>SSID</label><br><br>
+            <input class="w3-input w3-border" type="password" id="password"
+             name="password" autocorrect="off" autocapitalize="none">
+            <label>Password</label><span class="fa fa-eye w3-right w3-xlarge" style="cursor:pointer;"
+                                    onclick="showMaskPassword();" id="showPass"></span><br><br>
+            <button class="w3-btn w3-black w3-right" id="submitWifiSettings" onclick="return addWifi();">Submit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- bbqpi wifi modal -->
+    <div id="wifiModal" class="w3-modal">
+      <div class="w3-modal-content w3-large" style="margin-top:50px" tabindex="-1">
+        <header class="w3-container w3-black">
+          <span onclick="document.getElementById('wifiModal').style.display='none'" class="w3-btn w3-right"
+                style="padding-top:3px;padding-bottom:3px;padding-left:8px;padding-right:8px">&#10006;</span>
+          <h2>BBQPi Wifi</h2>
+        </header>
+        <div class="w3-container w3-padding">
+          <h3>Recent Networks</h3>
+          <?php
+            include_once('db.php');
+            $db=Database::getInstance();
+            $pdo=$db->getConnection();
+            $query="select * from networks order by last desc;";
+            $results=Database::select($query,$pdo);
+          ?>
+          <table id="wifiNetworks" class="w3-table w3-striped w3-white">
+          <?php
+          if ($result!==false) {
+            $i=0;
+            foreach ($results as $row) {
+              $i++;
+              $sig=abs($row["signal"]);
+              if ($sig>=0 && $sig<67) {
+                $icon="sig_4.png";
+              } else if ($sig>=67 && $sig<70) {
+                $icon="sig_3.png";
+              } else if ($sig>=70 && $sig<80) {
+                $icon="sig_2.png";
+              } else if ($sig>=80 && $sig<90) {
+                $icon="sig_1.png";
+              } else {
+                $icon="sig_0.png";
+              }
+              if ($row["secure"]==1) {
+               $icon="s".$icon;
+              } else {
+               $icon="u".$icon;
+              }
+              echo "            <tr>\n";
+              echo "              <td><img src='./img/".$icon."'></img></td>\n";
+              echo "              <td>".$row['ssid']."</td>\n";
+              echo "              <td>".$row['signal']."</td>\n";
+              echo "              <td>".date('F jS @ h:i:s a',strtotime($row['last']))."</td>\n";
+              echo "            </tr>\n";
+            }
+          }
+          ?>
+          </table>
+        </div>
+        <div class="w3-container w3-padding">
+          <h3>Add Wifi Network</h3>
           <form id="wifiSettings" class="w3-container">
             <input class="w3-input w3-border" type="text" id="ssid" name="ssid"
              autocorrect="off" autocapitalize="none">
