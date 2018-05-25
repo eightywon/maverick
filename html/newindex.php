@@ -227,7 +227,7 @@
         <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-bell fa-fw"></i>&nbsp; Alerts</a>
         <a href="#" class="w3-bar-item w3-button w3-padding"><i class="material-icons fa-fw" style="font-size:15px">whatshot</i>&nbsp; Smokers</a>
         <a class="w3-bar-item w3-button w3-padding" onclick="document.getElementById('settingsModal').style.display='block'"><i class="fa fa-cog fa-fw"></i>&nbsp; Settings</a>
-        <a class="w3-bar-item w3-button w3-padding" onclick="document.getElementById('wifiModal').style.display='block'"><i class="fa fa-cog fa-fw"></i>&nbsp; BBQPi Wifi</a>
+        <a class="w3-bar-item w3-button w3-padding" onclick="document.getElementById('wifiModal').style.display='block'"><i class="fa fa-cog fa-fw"></i>&nbsp; BBQPi Wifi Settings</a>
       </div>
     </nav>
 
@@ -271,19 +271,21 @@
 
     <!-- bbqpi wifi modal -->
     <div id="wifiModal" class="w3-modal">
-      <div class="w3-modal-content w3-large" style="margin-top:50px" tabindex="-1">
+      <div class="w3-hide-large" style="margin-top:100px"></div>
+      <div class="w3-modal-content w3-large" style="margin-top:-50px" tabindex="-1">
         <header class="w3-container w3-black">
           <span onclick="document.getElementById('wifiModal').style.display='none'" class="w3-btn w3-right"
                 style="padding-top:3px;padding-bottom:3px;padding-left:8px;padding-right:8px">&#10006;</span>
-          <h2>BBQPi Wifi</h2>
+          <h2>BBQPi Wifi Settings</h2>
         </header>
         <div class="w3-container w3-padding">
           <h3>Recent Networks</h3>
           <?php
             include_once('db.php');
+            include_once('functions.php');
             $db=Database::getInstance();
             $pdo=$db->getConnection();
-            $query="select * from networks order by last desc;";
+            $query="select * from networks order by last desc,signal;";
             $results=Database::select($query,$pdo);
           ?>
           <table id="wifiNetworks" class="w3-table w3-striped w3-white">
@@ -313,7 +315,8 @@
               echo "              <td><img src='./img/".$icon."'></img></td>\n";
               echo "              <td>".$row['ssid']."</td>\n";
               echo "              <td>".$row['signal']."</td>\n";
-              echo "              <td>".date('F jS @ h:i:s a',strtotime($row['last']))."</td>\n";
+              //echo "              <td>".date('F jS @ h:i:s a',strtotime($row['last']))."</td>\n";
+              echo "              <td><span title='".date('F jS @ h:i:s a',strtotime($row['last']))."'>".getRelativeTime(strtotime($row['last']))."</span></td>\n";
               echo "            </tr>\n";
             }
           }
