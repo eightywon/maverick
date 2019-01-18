@@ -66,7 +66,7 @@ Install steps as of 5/2018 (Raspbian stretch lite version March 2018) (work in p
    d. .quit to exit  
 18. Build the maverick executable  
    a. cd ~/maverick  
-   b. sudo gcc -o /var/www/html/maverick maverick.c -lwiringPi -lsqlite3  
+   b. sudo gcc -o /var/www/html/maverick maverick.c -lpigpio -lsqlite3  
 19. Enable nginx user www-data to execute and kill maverick executable  
    a. sudo visudo  
    b. add "www-data ALL=(ALL) NOPASSWD: /var/www/html/maverick.sh, /bin/kill" as last line
