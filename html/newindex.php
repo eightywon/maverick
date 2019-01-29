@@ -317,6 +317,7 @@
               echo "              <td>".$row['signal']."</td>\n";
               //echo "              <td>".date('F jS @ h:i:s a',strtotime($row['last']))."</td>\n";
               echo "              <td><span title='".date('F jS @ h:i:s a',strtotime($row['last']))."'>".getRelativeTime(strtotime($row['last']))."</span></td>\n";
+              echo "              <td><button class='w3-button w3-round w3-small w3-green' value='".$row['ssid']."' onclick='alert(this.value);'>Join</button></td>\n";
               echo "            </tr>\n";
             }
           }
@@ -331,13 +332,14 @@
             <label>SSID</label><br><br>
             <input class="w3-input w3-border" type="password" id="password"
              name="password" autocorrect="off" autocapitalize="none">
-            <label>Password</label><span class="fa fa-eye w3-right w3-xlarge" style="cursor:pointer;"
-                                    onclick="showMaskPassword();" id="showPass"></span><br><br>
-            <button class="w3-btn w3-black w3-right" id="submitWifiSettings" onclick="return addWifi();">Submit</button>
+            <label>Password</label><br><span class="fa fa-eye w3-left w3-xlarge" style="cursor:pointer;"
+                                    onclick="showMaskPassword();" id="showPass"></span>
+            <button class="w3-button w3-green w3-right" id="submitWifiSettings" onclick="return addWifi();">Add</button>
           </form>
         </div>
       </div>
     </div>
+
 
     <!-- Overlay effect when opening sidebar on small screens -->
     <div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
