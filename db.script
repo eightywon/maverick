@@ -6,4 +6,5 @@ CREATE TABLE cooks (id INTEGER PRIMARY KEY AUTOINCREMENT,start TEXT,end TEXT,smo
 CREATE TABLE activecook (cookid INT);
 INSERT INTO activecook (cookid) values (-1);
 CREATE TABLE smokers (id INTEGER PRIMARY KEY AUTOINCREMENT,desc TEXT);
+CREATE TABLE networks (ssid TEXT,signal TEXT,last TEXT,secure INT);
 PRAGMA journal_mode=WAL;
