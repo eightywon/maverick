@@ -16,7 +16,7 @@ unsigned int bit_ok,i,pin_state,firstRead=1,goodData,badReadCount,time_since_las
 int probe1=0,probe2=0,prevProbe1=0,prevProbe2=0,rc,current_micros,current_millis;
 char *zErrMsg=0;
 unsigned int shortBitTick,transmissionCount,nibbleShift,nibbleOne,nibbleTwo;
-uint32_t toCheck,tsl_micros,last_interrupt_micros;
+uint32_t toCheck,tsl_micros,last_interrupt_micros, checksum;
 
 sqlite3 *db;
 
@@ -230,6 +230,7 @@ void readPin (int gpio,int pin_state,uint32_t tick) {
 		}
 		transmissionCount++;
 		toCheck=0;
+		checksum=0;
                 printf("Set first bit, going DATA@%d, trancount: %d\n",tick,transmissionCount);
         }
 
@@ -282,8 +283,14 @@ void readPin (int gpio,int pin_state,uint32_t tick) {
 	                        nibbleTwo=(nibbleTwo<<1)+current_bit;
 			}
 
-			if (nibbleShift>=6 && nibbleShift<=17) {
-				//toCheck=(toCheck<<1)+current_bit;
+			if (nibbleShift>=25 && nibbleShift<=48) {
+				toCheck=(toCheck<<1)+current_bit;
+				printf("toCheck is 0x%X at %d (bit is %d)\n",toCheck,nibbleShift,current_bit);
+			}
+
+			if (nibbleShift>=49 && nibbleShift<=72) {
+				checksum=(checksum<<1)+current_bit;
+				printf("checksum is 0x%X at %d (bit is %d)\n",checksum,nibbleShift,current_bit);
 			}
 
                         //current_byte = (current_byte << 1) + current_bit;
@@ -333,6 +340,7 @@ void readPin (int gpio,int pin_state,uint32_t tick) {
                         if (shift_value == 8) {
 				current_byte=(nibbleOne<<4)+nibbleTwo;
 				//printf("byte is 0x%X\n",current_byte);
+				//printf("byte is %d\n",current_byte);
                                 data_array[data_array_index++] = current_byte;
                                 bit_count=0;
                                 shift_value = 0;
@@ -345,7 +353,8 @@ void readPin (int gpio,int pin_state,uint32_t tick) {
                         if (data_array_index==13) {
                                 start_pulse_counter = 0;
 				detection_state = STATE_START_PULSES;
-				toCheck=0;
+				//toCheck=0;
+				//checksum=0;
                                 for (i=0;i<=12;i++) {
 					if (i==0) {printf("Header: ");}
 					else if (i==3) {printf("Startup: ");}
@@ -355,14 +364,22 @@ void readPin (int gpio,int pin_state,uint32_t tick) {
 					if (i==2 || i==3 || i==8) {printf("\n");}
                                         save_array[i] = data_array[i];
 
+					/*
 					if (i>=3 && i<=8) {
-						toCheck=(toCheck<<12)+data_array[i];
+						toCheck=(toCheck<<8)+data_array[i];
 					}
+					*/
                                 }
 				printf("\n");
+				printf("toCheck: 0x%X\n",toCheck);
+				//printf("decimal checksum: %d 0x%X\n",checksum,checksum);
+				//printf("0x%X\n",2664021);
+				//toCheck=2664021;
+				//printf("toCheck: %d\n",toCheck);
+				//printf("tallied: %d 0x%X\n",checksum,checksum);
+				printf("Calculated Checksum: 0x%X\n",calculate_checksum(toCheck));
+				printf("Calculated Checksum: %d\n",calculate_checksum(toCheck));
 				fflush(stdout);
-				//printf("toCheck: 0x%014X\n",toCheck);
-				//printf("Calculated Checksum: 0x%X\n",calculate_checksum(toCheck));
 				outputData();
                         }
                         bit_ok = 0;
