@@ -1,6 +1,6 @@
 <html>
  <head>
-  <!-- <meta http-equiv="refresh" content="5;URL='readings.php'"> -->
+ <!-- <meta http-equiv="refresh" content="5;URL='readings.php'"> -->
  </head>
  <body>
 	<?php
@@ -12,7 +12,6 @@
 			}
 		}
 		$database=new MyDB();
-		//$query="SELECT probe1, probe2, time FROM readings WHERE cookid=".$_COOKIE['cookID']." ORDER BY time DESC;";
 		$query="SELECT probe1, probe2, time FROM readings WHERE cookid=".$_GET['cookid']." ORDER BY time DESC;";
 		if ($resall=$database->query($query))
 		{

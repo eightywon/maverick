@@ -15,6 +15,7 @@
     z-index: 20;
    }
   </style>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
   <!--Load the AJAX API-->
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
@@ -149,7 +150,22 @@
 				  ignoreBouds: true,
 				  isHtml: true,
 				  pivot: {x: -50, y: -80}
+			} /*,
+			annotations: {
+				textStyle: {
+				//fontName: 'Times-Roman',
+				fontSize: 18,
+				bold: true,
+				italic: true,
+				// The color of the text.
+				color: '#871b47',
+				// The color of the text outline.
+				auraColor: '#d799ae',
+				// The transparency of the text.
+				opacity: 0.8
+				}
 			}
+			*/
 		};
 
 		// Create our data table out of JSON data loaded from server.
@@ -162,6 +178,28 @@
 		//add event for body clicks that clears the tooltip
 		document.body.addEventListener('click',clearSelection,true);
 
+		//create view
+		view=new google.visualization.DataView(data);
+
+		//add listener for tooltip clicks
+		google.visualization.events.addListener(chart,'select',selectHandler);
+		
+		function selectHandler() {
+		  var selection = chart.getSelection();
+		  if (selection[0]) {
+			document.getElementById('pointModal').style.display='block'
+			console.log(selection[0])
+			console.log(view.getViewColumns());
+			var colNum=selection[0].column;
+			if (data.getFormattedValue(selection[0].row,4)=='') {
+				console.log(selection[0][colNum]);
+			} else {
+				console.log(selection[0][colNum]);
+				console.log(data.getFormattedValue(selection[0].row,4));
+			}
+		  }
+		}
+
 		//add event for tootltip delete data point click to perform the query
 		chart.setAction({
 			id: 'delPoint',
@@ -169,6 +207,7 @@
 			action: function() {
 				selection=chart.getSelection();
 				dtstring=data.getFormattedValue(selection[0].row,0);
+				console.log(dtstring);
 				$.ajax({
 					url: 'delpoint.php',
 					type:'POST',
@@ -229,10 +268,9 @@
 			}
 		});
 		*/
-
+		
 		//show or hide the food or pit graphs based on user input
 		if (!$("#showPit").is(":checked") || !$("#showFood").is(":checked")) {
-			view=new google.visualization.DataView(data);
 			if (!$("#showFood").is(":checked")) {
 				view.hideColumns([1]);
 			}
@@ -278,8 +316,14 @@
    </tr>
    <tr align=center>
     <td colspan=2>
+  <div id="pointModal" class="w3-display-container w3-card w3-display-middle" style="height:150px;width:250px;display:none;z-index:9999">
+    <span class="w3-button w3-display-topright" onclick="document.getElementById('pointModal').style.display='none'">&times;</span>
+   <p>Some text in the Modal..</p>
+   <p>Some text in the Modal..</p>
+  </div>
      <div class="loading"><div id="loading-img"></div></div>
-     <div id='chart_div'></div>
+     <div id='chart_div'>
+	 </div>
     </td>
    </tr>
    <tr align=left>

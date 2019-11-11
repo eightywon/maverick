@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/fontawesome.css" integrity="sha384-q3jl8XQu1OpdLgGFvNRnPdj5VIlCvgsDQTQB6owSOHWlAurxul7f+JpUOVdAiJ5P" crossorigin="anonymous">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <script src="https://code.jquery.com/jquery-3.1.0.js"   integrity="sha256-slogkvB1K3VOkzAI8QITxV3VzpOnkeNVsKvtkYLMjfk="   crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.js"></script>
+    <script src="https://www.chartjs.org/samples/latest/utils.js"></script>
     <style>
       html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
       @media only screen and (min-width: 801px) {
@@ -30,11 +33,34 @@
       @media only screen and (max-width: 800px) {
         #sidebar_header { margin-top: 16px !important;}
       }
+      canvas{
+        -moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+      }
+      #chartjs-tooltip {
+	opacity: 1;
+	position: absolute;
+	background: rgba(0, 0, 0, .7);
+	color: white;
+	border-radius: 3px;
+	-webkit-transition: all .1s ease;
+	transition: all .1s ease;
+	-webkit-transform: translate(-50%, 0);
+	transform: translate(-50%, 0);
+      }
+      .chartjs-tooltip-key {
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	margin-right: 10px;
+      }
     </style>
     <script>
       var getWeather;
       var zipCode, apiKey;
-
+      var tooltipVisible=false;
+      var pointToDelete;
       function setCookie(form) {
         document.cookie="zipCode="+escape(form.zipCode.value)+";path=/;";
         document.cookie="apiKey="+escape(form.apiKey.value)+";path=/;";
@@ -53,7 +79,7 @@
         $("#zipCode").val(zipCode);
         $("#apiKey").val(apiKey);
       }
-      getCookie();
+      //getCookie();
 
       function showMaskPassword() {
         var fld=document.getElementById("password");
@@ -96,116 +122,327 @@
         return ret;
       }
 
-      $(function() {
+	//testing from here
+	function deletePoint() {
+		var dateTime=new Date(pointToDelete);
+		dateTime=moment(dateTime).format("YYYY-MM-DD HH:mm:ss");
+		$.ajax({
+			url: 'delpoint.php',
+			type:'POST',
+			data: {'cookid': 98, 'time': dateTime}, //todo: send actual cookid
+			success:function(data){
+				if (data!='fail') {
+					Chart.helpers.each(Chart.instances, function(instance){ //todo: is there a better way to get chart instance?
+						var delIndex=instance.data.labels.indexOf(dateTime);
+						instance.data.datasets[0].data.splice(delIndex,1);
+						instance.data.datasets[1].data.splice(delIndex,1);
+						instance.data.labels.splice(delIndex,1);
+						instance.chart.update();
+						document.getElementById("chartjs-tooltip").style.opacity="0";
+						tooltipVisible=false;
+					})
+				} else { alert('failed');} //todo: what to do on failure?
+			}
+		});
+	}
 
-        var interval=function(){
-          $.ajax({
-            url:'interval.php',
-            type:'POST',
-            success:function(data){
-              if(data=='Start Cook') {
-                $('#toggleCook').show();
-                //noSleep.disable();
-              } else {
-                $('#toggleCook').hide();
-              }
-            }
-          });
-        }
-        setInterval(interval,1000);
+	function pointClicked(e,item) {
+		if (item[0]) {
+			if (document.getElementById("chartjs-tooltip")) {
+				document.getElementById("chartjs-tooltip").style.opacity="1";
+				tooltipVisible=true;
+			}
+			updateConfigByMutating();
+		} else {
+			if (document.getElementById("chartjs-tooltip")) {
+				document.getElementById("chartjs-tooltip").style.opacity="0";
+				tooltipVisible=false;
+			}
+		}
+	}
 
-        getWeather=function() {
-          setWeatherSpinner(true);
-          getCookie();
-          $.ajax({
-            url: "http://api.wunderground.com/api/"+apiKey+"/forecast/q/"+zipCode+".json",
-            dataType: "jsonp",
-            async: false,
-            success: function(json) {
-              console.log(json);
-              if (json.forecast) {
-                $("#wthrHigh").html("&nbsp;"+json.forecast.simpleforecast.forecastday[0].high.fahrenheit+"&deg;");
-                $("#wthrLow").html("&nbsp;"+json.forecast.simpleforecast.forecastday[0].low.fahrenheit+"&deg;");
-                $("#wthrPrecipitation").html("&nbsp;"+json.forecast.simpleforecast.forecastday[0].qpf_allday.in+"''");
-                $("#wthrDesc0").html("<b>"+json.forecast.txt_forecast.forecastday[0].title+"</b>: &nbsp;"+
-                                        json.forecast.txt_forecast.forecastday[0].fcttext);
-                $("#wthrDesc1").html("<b>"+json.forecast.txt_forecast.forecastday[1].title+"</b>: &nbsp;"+
-                                        json.forecast.txt_forecast.forecastday[1].fcttext);
-                $("#wthrDesc2").html("<b>"+json.forecast.txt_forecast.forecastday[2].title+"</b>: &nbsp;"+
-                                        json.forecast.txt_forecast.forecastday[2].fcttext);
-                setWeatherSpinner(false);
-              } else if (json.response) {
-                $("[id^=wthr]").html("");
-                $("#wLocation").html(" - Invalid API Key - <span onclick=\"document.getElementById('settingsModal').style.display='block'\" style=\"cursor:pointer\"><u>Click here to fix</u></span>");
-              }
-            },
-            error: function(data) {
-              console.log(data);
-            }
-          });
+	function updateConfigByMutating() {
+		//this is a hack to allow other point clicking when a tooltip is currently showing
+		//without this, cliks on other points/tooltips don't display that tooltip
+		Chart.helpers.each(Chart.instances, function(instance){
+			instance.chart.update();
+		})
+	}
 
-          $.ajax({
-            url: "http://api.wunderground.com/api/"+apiKey+"/conditions/q/"+zipCode+".json",
-            dataType: "jsonp",
-            async: false,
-            success: function(json) {
-              console.log(json);
-              if (json.current_observation) {
-                $("#wthrNow").html("&nbsp;"+json.current_observation.temp_f+"&deg;");
-                $("#wLocation").html(" - "+json.current_observation.display_location.full);
-                $("#wthrWind").html("&nbsp;"+json.current_observation.wind_string);
-                $("#wthrFeelsLike").html("&nbsp;"+json.current_observation.feelslike_f+"&deg;");
-                $("#wthrRelHumidity").html("&nbsp;"+json.current_observation.relative_humidity);
-                setWeatherSpinner(false);
-              } else if (json.response) {
-                $("[id^=wthr]").html("");
-                $("#wLocation").html(" - Invalid API Key - <span onclick=\"document.getElementById('settingsModal').style.display='block'\" style=\"cursor:pointer\"><u>Click here to fix</u></span>");
-              }
-            },
-            error: function(data) {
-              console.log(data);
-            }
-          });
-        }//getWeather
-        getWeather();
+	var customTooltips=function(tooltip) {
+		//don't show a new tooltip on hover if the the current tooltip showing has been clicked
+		//this is to allow the user to 'sticky' the clicked tooltip so they can click the 'Delete?' link
+		if (window.event.type!='click' && tooltipVisible==true) {
+			return;
+		}
+		var tooltipEl=document.getElementById("chartjs-tooltip");
 
-        function setWeatherSpinner(state) {
-          if (state) {
-            $("#weatherIcon").removeClass("fa fa-sun");
-            $("#weatherIcon").addClass("fa fa-spinner fa-spin");
-          } else {
-            $("#weatherIcon").removeClass("fa fa-spinner fa-spin");
-            $("#weatherIcon").addClass("fa fa-sun");
-          }
-        }
+		if (!tooltipEl) {
+			tooltipEl = document.createElement('div');
+			tooltipEl.id = 'chartjs-tooltip';
+			tooltipEl.innerHTML = '<table></table>';
+			this._chart.canvas.parentNode.appendChild(tooltipEl);
+		}
 
-        $("#submitSettingsForm").click(function(event) {
-          event.preventDefault(); //kills submit button default event processing
-          $.post("newindex.php",$("settingsForm").serialize());
-        });
+		document.getElementById("chartjs-tooltip").style.opacity="0.5";
 
-        //click outside closes modal
-        var modal=document.getElementById("settingsModal");
-        window.onclick=function(event) {
-          if (event.target==modal) {
-            closeSettingsModal();
-            //w3_close();
-          }
-        }
+		// Hide if no tooltip
+		if (tooltip.opacity === 0) {
+			tooltipEl.style.opacity = 0;
+			return;
+		}
 
-        //escape closes modal
-        window.onkeyup=function(event) {
-          if (event.keyCode==27) {
-            closeSettingsModal();
-          }
-        }
+		// Set caret Position
+		tooltipEl.classList.remove('above', 'below', 'no-transform');
+		if (tooltip.yAlign) {
+			tooltipEl.classList.add(tooltip.yAlign);
+		} else {
+			tooltipEl.classList.add('no-transform');
+		}
 
-        /* example of dynamically adding rows to table
-        var newRecentCook="<tr>\n  <td><i class='material-icons w3-large'>whatshot</i></td>\n"+
-                          "  <td>It's a new cook!</td>\n  <td><i>now</i></td>\n  </tr>\n";
-        $("#recentCooks tbody").append(newRecentCook);
-        */
-      }); //jquery loaded
+		function getBody(bodyItem) {
+			return bodyItem.lines;
+		}
+
+		function getBody(bodyItem) {
+			return bodyItem.lines;
+		}
+
+		// Set Text
+		if (tooltip.body) {
+			if  (tooltip.dataPoints[0]) {
+				pointToDelete=tooltip.dataPoints[0].label;
+			}
+			var titleLines = tooltip.title || [];
+			var bodyLines = tooltip.body.map(getBody);
+			var innerHtml = '<thead>';
+			titleLines.forEach(function(title) {
+				innerHtml += '<tr><th>' + title + '</th></tr>';
+			});
+			innerHtml += '</thead><tbody>';
+			bodyLines.forEach(function(body, i) {
+				var colors = tooltip.labelColors[i];
+				var style = 'background:' + colors.backgroundColor;
+				style += '; border-color:' + colors.borderColor;
+				style += '; border-width: 2px';
+				var span = '<span class="chartjs-tooltip-key" style="' + style + '"></span>';
+				innerHtml += '<tr><td>' + span + body + '</td></tr>';
+			});
+			innerHtml+='<tr><td align="center"><span><a href="#" onclick="deletePoint(); return false;">Delete?</a></span></td></tr>';
+			innerHtml += '</tbody>';
+			var tableRoot = tooltipEl.querySelector('table');
+			tableRoot.innerHTML = innerHtml;
+		}
+
+		var positionY = this._chart.canvas.offsetTop;
+		var positionX = this._chart.canvas.offsetLeft;
+
+
+		// Display, position, and set styles for font
+		tooltipEl.style.opacity = 1;
+		tooltipEl.style.left = positionX + tooltip.caretX + 100 + 'px';
+		tooltipEl.style.top = positionY + tooltip.caretY + 'px';
+		tooltipEl.style.fontFamily = tooltip._bodyFontFamily;
+		tooltipEl.style.fontSize = tooltip.bodyFontSize + 'px';
+		tooltipEl.style.fontStyle = tooltip._bodyFontStyle;
+		tooltipEl.style.padding = tooltip.yPadding + 'px ' + tooltip.xPadding + 'px';
+	};
+
+
+	$(function() {
+		$.ajax({
+			url: "getdata.php",
+			type: "POST",
+			data: {'reqType': 'chartjs', 'cookid': 98}, //todo: get the real cook id
+			async: false,
+			dataType: "json",
+			success: function(result){
+				labels=result.map(function(e) {
+					return e.time;
+				}),
+				food=result.map(function(e) {
+					return e.food;
+				}),
+				pit=result.map(function(e) {
+					return e.pit;
+				});
+
+				var color = Chart.helpers.color;
+				var timeFormat = 'YYYY-MM-DD HH:mm:ss';
+				var ctx = document.getElementById('myChart');
+				var myChart = new Chart(ctx, {
+					type: 'line',
+					data: {
+						labels: labels,
+						datasets: [{
+							label: 'Food',
+							borderColor: color("#009688").alpha(0.75).rgbString(),
+							backgroundColor: "#009688",
+							borderWidth: 3,
+							fill: false,
+							pointRadius: 0,
+							pointHoverRadius: 6,
+							pointHitRadius: 6,
+							data: food
+						},{
+							label: 'Pit',
+							backgroundColor: "#2196F3",
+							borderColor: color("#2196F3").alpha(0.75).rgbString(),
+							borderWidth: 3,
+							fill: false,
+							pointRadius: 0,
+							pointHoverRadius: 6,
+							pointHitRadius: 6,
+							data: pit
+						}]
+					},
+					options: {
+						//responsive: false,
+						events: ['click','mousemove'],
+						onClick: pointClicked,
+						tooltips: {
+							enabled: false,
+							mode: 'index',
+							position: 'nearest',
+							custom: customTooltips,
+							tooltipXPadding: 100 //todo: fix tooltip going off right side when point is too close to margin
+						},
+						title: {
+							text: ''
+						},
+						scales: {
+							xAxes: [{
+								type: 'time',
+								time: {
+									parser: timeFormat,
+									tooltipFormat: 'll h:mm:ss A'
+								},
+								scaleLabel: {
+									display: true,
+									labelString: 'Time'
+								}
+							}],
+							yAxes: [{
+								scaleLabel: {
+									display: true,
+									labelString: 'Temp'
+								},
+								ticks: {beginAtZero: false}
+							}]
+						},
+							}
+				});
+			}, //success function
+		});//ajax call
+
+		var interval=function(){
+			$.ajax({
+				url:'interval.php',
+				type:'POST',
+				success:function(data){
+					if(data=='Start Cook') {
+						$('#toggleCook').show();
+						//noSleep.disable();
+					} else {
+						$('#toggleCook').hide();
+					}
+				}
+			});
+	        }
+        	setInterval(interval,1000);
+
+		getWeather=function() {
+			setWeatherSpinner(true);
+			//getCookie();
+			$.ajax({
+				url: "http://api.wunderground.com/api/"+apiKey+"/forecast/q/"+zipCode+".json",
+				dataType: "jsonp",
+				async: false,
+				success: function(json) {
+					console.log(json);
+					if (json.forecast) {
+						$("#wthrHigh").html("&nbsp;"+json.forecast.simpleforecast.forecastday[0].high.fahrenheit+"&deg;");
+						$("#wthrLow").html("&nbsp;"+json.forecast.simpleforecast.forecastday[0].low.fahrenheit+"&deg;");
+						$("#wthrPrecipitation").html("&nbsp;"+json.forecast.simpleforecast.forecastday[0].qpf_allday.in+"''");
+						$("#wthrDesc0").html("<b>"+json.forecast.txt_forecast.forecastday[0].title+"</b>: &nbsp;"+
+							json.forecast.txt_forecast.forecastday[0].fcttext);
+						$("#wthrDesc1").html("<b>"+json.forecast.txt_forecast.forecastday[1].title+"</b>: &nbsp;"+
+							json.forecast.txt_forecast.forecastday[1].fcttext);
+						$("#wthrDesc2").html("<b>"+json.forecast.txt_forecast.forecastday[2].title+"</b>: &nbsp;"+
+							json.forecast.txt_forecast.forecastday[2].fcttext);
+						setWeatherSpinner(false);
+					} else if (json.response) {
+						$("[id^=wthr]").html("");
+						$("#wLocation").html(" - Invalid API Key - <span onclick=\"document.getElementById('settingsModal').style.display='block'\" style=\"cursor:pointer\"><u>Click here to fix</u></span>");
+					}
+				},
+				error: function(data) {
+					console.log(data);
+				}
+			});
+
+			$.ajax({
+				url: "http://api.wunderground.com/api/"+apiKey+"/conditions/q/"+zipCode+".json",
+				dataType: "jsonp",
+				async: false,
+				success: function(json) {
+					console.log(json);
+					if (json.current_observation) {
+						$("#wthrNow").html("&nbsp;"+json.current_observation.temp_f+"&deg;");
+						$("#wLocation").html(" - "+json.current_observation.display_location.full);
+						$("#wthrWind").html("&nbsp;"+json.current_observation.wind_string);
+						$("#wthrFeelsLike").html("&nbsp;"+json.current_observation.feelslike_f+"&deg;");
+						$("#wthrRelHumidity").html("&nbsp;"+json.current_observation.relative_humidity);
+						setWeatherSpinner(false);
+					} else if (json.response)
+						$("[id^=wthr]").html("")
+						$("#wLocation").html(" - Invalid API Key - <span onclick=\"document.getElementById('settingsModal').style.display='block'\" style=\"cursor:pointer\"><u>Click here to fix</u></span>");
+					}
+				},
+				error: function(data) {
+					console.log(data);
+				}
+			});
+		}//getWeather
+		getWeather();
+
+		function setWeatherSpinner(state) {
+			if (state) {
+				$("#weatherIcon").removeClass("fa fa-sun");
+				$("#weatherIcon").addClass("fa fa-spinner fa-spin");
+			} else {
+				$("#weatherIcon").removeClass("fa fa-spinner fa-spin");
+				$("#weatherIcon").addClass("fa fa-sun");
+			}
+		}
+
+		$("#submitSettingsForm").click(function(event) {
+			event.preventDefault(); //kills submit button default event processing
+			$.post("newindex.php",$("settingsForm").serialize());
+		});
+
+		//click outside closes modal
+		var modal=document.getElementById("settingsModal");
+		window.onclick=function(event) {
+			if (event.target==modal) {
+				closeSettingsModal();
+				//w3_close();
+			}
+		}
+
+		//escape closes modal
+		window.onkeyup=function(event) {
+			if (event.keyCode==27) {
+				closeSettingsModal();
+			}
+		}
+
+		/* example of dynamically adding rows to table
+		var newRecentCook="<tr>\n  <td><i class='material-icons w3-large'>whatshot</i></td>\n"+
+			"  <td>It's a new cook!</td>\n  <td><i>now</i></td>\n  </tr>\n";
+		$("#recentCooks tbody").append(newRecentCook);
+		*/
+	}); //jquery loaded
     </script>
   </head>
   <body class="w3-light-grey">
@@ -375,6 +612,13 @@
             <div id="wthrDesc2" class=""></div><br>
           </div>
         </div>
+      </div>
+
+      <!-- graph card -->
+      <div class="w3-container w3-margin-bottom">
+       <div id="chartHolder" class="w3-row w3-card-4 w3-light-grey">
+        <canvas id="myChart" width="1800" height="800"></canvas>
+       </div>
       </div>
 
       <!-- Stats cards -->
