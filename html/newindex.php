@@ -263,8 +263,36 @@
 				food=result.map(function(e) {
 					return e.food;
 				}),
+				note=result.map(function(e) {
+					return e.note;
+				}),
 				pit=result.map(function(e) {
 					return e.pit;
+				});
+
+				Chart.plugins.register({
+					afterDatasetDraw: function(chart) {
+						ctx=chart.ctx;
+						var img=new Image();
+						img.src="note.png";
+						img.id="theNote";
+						$.each(note, function(index, value) {
+							if (value!="") {
+								var points=chart.getDatasetMeta(0).data;
+								//console.log(points[index]._model.x);
+								//console.log(points[index]._model.y);
+								ctx.save();
+								ctx.globalAlpha=0.2;
+								ctx.drawImage(img,points[index]._model.x-36,points[index]._model.y-36,36,36);
+								points=chart.getDatasetMeta(1).data;
+								//console.log(points[index]._model.x);
+								//console.log(points[index]._model.y);
+								ctx.drawImage(img,points[index]._model.x-36,points[index]._model.y-36,36,36);
+								ctx.restore();
+								//console.log(index+" "+value);
+							}
+						});
+					}
 				});
 
 				var color = Chart.helpers.color;
@@ -359,7 +387,7 @@
 				dataType: "jsonp",
 				async: false,
 				success: function(json) {
-					console.log(json);
+					//console.log(json);
 					if (json.forecast) {
 						$("#wthrHigh").html("&nbsp;"+json.forecast.simpleforecast.forecastday[0].high.fahrenheit+"&deg;");
 						$("#wthrLow").html("&nbsp;"+json.forecast.simpleforecast.forecastday[0].low.fahrenheit+"&deg;");
@@ -377,7 +405,7 @@
 					}
 				},
 				error: function(data) {
-					console.log(data);
+					//console.log(data);
 				}
 			});
 
@@ -386,7 +414,7 @@
 				dataType: "jsonp",
 				async: false,
 				success: function(json) {
-					console.log(json);
+					//console.log(json);
 					if (json.current_observation) {
 						$("#wthrNow").html("&nbsp;"+json.current_observation.temp_f+"&deg;");
 						$("#wLocation").html(" - "+json.current_observation.display_location.full);
@@ -394,13 +422,13 @@
 						$("#wthrFeelsLike").html("&nbsp;"+json.current_observation.feelslike_f+"&deg;");
 						$("#wthrRelHumidity").html("&nbsp;"+json.current_observation.relative_humidity);
 						setWeatherSpinner(false);
-					} else if (json.response)
+					} else if (json.response) {
 						$("[id^=wthr]").html("")
 						$("#wLocation").html(" - Invalid API Key - <span onclick=\"document.getElementById('settingsModal').style.display='block'\" style=\"cursor:pointer\"><u>Click here to fix</u></span>");
 					}
 				},
 				error: function(data) {
-					console.log(data);
+					//console.log(data);
 				}
 			});
 		}//getWeather
@@ -446,7 +474,7 @@
     </script>
   </head>
   <body class="w3-light-grey">
-
+    <img id=>
     <!-- Top container -->
     <div id="top_container" class="w3-bar w3-top w3-black w3-large" style="z-index:4">
       <button class="w3-bar-item w3-button w3-hide-large w3-hover-none w3-hover-text-light-grey" onclick="w3_open();"><span class="w3-xlarge"><i class="fa fa-bars"></i> &nbsp;Menu</span></button>
