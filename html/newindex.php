@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html> <html>
   <head>
     <title>BBQPi</title>
     <meta charset="UTF-8">
@@ -59,8 +58,13 @@
     <script>
       var getWeather;
       var zipCode, apiKey;
-      var tooltipVisible=false;
+      var tooltipVisible=false; //todo: can this be replaced by checking tooltip opacity?
       var pointToDelete;
+      var isLink=false;
+	var linkX=new Array();
+	var linkY=new Array();
+	var myChart;
+	var flag=false;
       function setCookie(form) {
         document.cookie="zipCode="+escape(form.zipCode.value)+";path=/;";
         document.cookie="apiKey="+escape(form.apiKey.value)+";path=/;";
@@ -123,6 +127,91 @@
       }
 
 	//testing from here
+	/*
+	todo notes:
+		1. add "add note" functionality
+			a. note type - pit or food
+			b. add ability to attach pic? for instance, picture of bark. would need to add blob column in db
+		2. fix weather, openweather map?
+	*/
+	function CanvasMouseMove(e) {
+		var x, y;
+		if (e.layerX || e.layerX == 0) { // for firefox
+			x = e.layerX;
+			y = e.layerY;
+		}
+
+		//x -= canvas.offsetLeft;
+		//y -= canvas.offsetTop;
+		//console.log("x: "+x+" y: "+y);
+		for (i=0;i<linkX.length;i++) {
+			//console.log("link pos: x:"+linkX[i].xPos+" y:"+linkX[i].yPos);
+			if (x >= linkX[i].xPos && x <= (linkX[i].xPos + 18)
+			    && y >= linkX[i].yPos && y <= (linkX[i].yPos + 18)) {
+				console.log("we're on it");
+				document.body.style.cursor = "pointer";
+				isLink = true;
+				break;
+			} else {
+				console.log("we're off it");
+				document.body.style.cursor = "";
+				isLink = false;
+			}
+		}
+	}
+
+	function Link_click(e) {
+		if (isLink) {
+			debugger;
+			//console.log(e);
+			isLink=false;
+			//console.log("clicked");
+			clickElement(myChart,0,1000);
+		}
+		event.preventDefault;
+		e.preventDefault;
+	}
+
+	function clickElement(chart, datasetIndex, index) {
+		debugger;
+		console.log("clickElement firing");
+		var node = chart.canvas;
+
+		var rect = node.getBoundingClientRect();
+		console.log(rect.left+" "+rect.top);
+		var el = chart.getDatasetMeta(datasetIndex).data[index];
+		console.log(el);
+		var point = resolveElementPoint(el);
+		var event = new MouseEvent('mousemove', {
+			/*
+			clientX: rect.left + point.x,
+			clientY: rect.top + point.y,
+			*/
+			clientX: rect.left+el._model.x,
+			clientY: rect.top+el._model.y,
+			cancelable: false,
+			bubbles: true,
+			view: window
+		});
+		console.log(event);
+		node.dispatchEvent(event);
+	}
+
+	function resolveElementPoint(el) {
+		var point = {x: 0, y: 0};
+		if (el) {
+			if (typeof el.getCenterPoint === 'function') {
+				point = el.getCenterPoint();
+			} else if (el.x !== undefined && el.y !== undefined) {
+				point = el;
+			} else if (el._model && el._model.x !== undefined && el._model.y !== undefined) {
+				point = el._model;
+			}
+		}
+		console.log(point);
+		return point;
+	}
+
 	function deletePoint() {
 		var dateTime=new Date(pointToDelete);
 		dateTime=moment(dateTime).format("YYYY-MM-DD HH:mm:ss");
@@ -146,17 +235,31 @@
 		});
 	}
 
-	function pointClicked(e,item) {
-		if (item[0]) {
+	function pointClicked(e) {
+	//function pointClicked(e,item) { <--- change this back if using events: 'click' in chart options
+		console.log(myChart);
+		debugger;
+		var item=myChart.tooltip._active;
+		console.log(item);
+		if (item && item[0]) {
 			if (document.getElementById("chartjs-tooltip")) {
 				document.getElementById("chartjs-tooltip").style.opacity="1";
 				tooltipVisible=true;
+				customTooltips(item);
 			}
 			updateConfigByMutating();
 		} else {
-			if (document.getElementById("chartjs-tooltip")) {
-				document.getElementById("chartjs-tooltip").style.opacity="0";
-				tooltipVisible=false;
+			debugger;
+			if (isLink) {
+				debugger;
+				console.log("it was true, sending click");
+				isLink=false;
+				clickElement(myChart,0,1000);
+			} else {
+				if (document.getElementById("chartjs-tooltip")) {
+					document.getElementById("chartjs-tooltip").style.opacity="0";
+					tooltipVisible=false;
+				}
 			}
 		}
 	}
@@ -170,9 +273,13 @@
 	}
 
 	var customTooltips=function(tooltip) {
+		if (window.event.type=="click") {
+			//console.log("cx: "+window.event.clientX+" cy: "+window.event.clientY);
+		}
 		//don't show a new tooltip on hover if the the current tooltip showing has been clicked
 		//this is to allow the user to 'sticky' the clicked tooltip so they can click the 'Delete?' link
 		if (window.event.type!='click' && tooltipVisible==true) {
+			console.log("suppressing tooltip click");
 			return;
 		}
 		var tooltipEl=document.getElementById("chartjs-tooltip");
@@ -228,6 +335,9 @@
 				var span = '<span class="chartjs-tooltip-key" style="' + style + '"></span>';
 				innerHtml += '<tr><td>' + span + body + '</td></tr>';
 			});
+			if (note[tooltip.dataPoints[0].index]!="") {
+				innerHtml+='<tr><td><span><strong>Note: </strong>'+note[tooltip.dataPoints[0].index]+'</span></td></tr>';
+			}
 			innerHtml+='<tr><td align="center"><span><a href="#" onclick="deletePoint(); return false;">Delete?</a></span></td></tr>';
 			innerHtml += '</tbody>';
 			var tableRoot = tooltipEl.querySelector('table');
@@ -246,6 +356,7 @@
 		tooltipEl.style.fontSize = tooltip.bodyFontSize + 'px';
 		tooltipEl.style.fontStyle = tooltip._bodyFontStyle;
 		tooltipEl.style.padding = tooltip.yPadding + 'px ' + tooltip.xPadding + 'px';
+
 	};
 
 
@@ -270,24 +381,59 @@
 					return e.pit;
 				});
 
+				canvas=document.getElementById("myChart");
+				canvas.addEventListener("mousemove",CanvasMouseMove, false);
+				//canvas.addEventListener("click",customTooltips,true);
+				canvas.addEventListener("click",pointClicked,true);
+				var img=new Image();
+				img.src="note.png";
 				Chart.plugins.register({
 					afterDatasetDraw: function(chart) {
+						//console.log("afterDatasetDraw");
 						ctx=chart.ctx;
-						var img=new Image();
-						img.src="note.png";
-						img.id="theNote";
+						theCtx=chart.ctx;
+						linkX=[];
+						linkY=[];
 						$.each(note, function(index, value) {
 							if (value!="") {
 								var points=chart.getDatasetMeta(0).data;
 								//console.log(points[index]._model.x);
 								//console.log(points[index]._model.y);
 								ctx.save();
-								ctx.globalAlpha=0.2;
-								ctx.drawImage(img,points[index]._model.x-36,points[index]._model.y-36,36,36);
+								ctx.globalAlpha=0.15;
+								ctx.drawImage(img,points[index]._model.x-18,points[index]._model.y-18,18,18);
+								linkX.push({
+									dataSet: 0,
+									index: index,
+									value: value,
+									xPos: points[index]._model.x-18,
+									yPos: points[index]._model.y-18
+								});
+								linkY.push({
+									dataSet: 0,
+									index: index,
+									value: value,
+									xPos: points[index]._model.x-18,
+									yPos: points[index]._model.y-18
+								});
 								points=chart.getDatasetMeta(1).data;
 								//console.log(points[index]._model.x);
 								//console.log(points[index]._model.y);
-								ctx.drawImage(img,points[index]._model.x-36,points[index]._model.y-36,36,36);
+								ctx.drawImage(img,points[index]._model.x-18,points[index]._model.y-18,18,18);
+								linkX.push({
+									dataSet: 1,
+									index: index,
+									value: value,
+									xPos: points[index]._model.x-18,
+									yPos: points[index]._model.y-18
+								});
+								linkY.push({
+									dataSet: 1,
+									index: index,
+									value: value,
+									xPos: points[index]._model.x-18,
+									yPos: points[index]._model.y-18
+								});
 								ctx.restore();
 								//console.log(index+" "+value);
 							}
@@ -298,7 +444,7 @@
 				var color = Chart.helpers.color;
 				var timeFormat = 'YYYY-MM-DD HH:mm:ss';
 				var ctx = document.getElementById('myChart');
-				var myChart = new Chart(ctx, {
+				 myChart = new Chart(ctx, {
 					type: 'line',
 					data: {
 						labels: labels,
@@ -309,8 +455,8 @@
 							borderWidth: 3,
 							fill: false,
 							pointRadius: 0,
-							pointHoverRadius: 6,
-							pointHitRadius: 6,
+							pointHoverRadius: 4,
+							pointHitRadius: 5,
 							data: food
 						},{
 							label: 'Pit',
@@ -319,14 +465,14 @@
 							borderWidth: 3,
 							fill: false,
 							pointRadius: 0,
-							pointHoverRadius: 6,
-							pointHitRadius: 6,
+							pointHoverRadius: 4,
+							pointHitRadius: 5,
 							data: pit
 						}]
 					},
 					options: {
 						//responsive: false,
-						events: ['click','mousemove'],
+						events: ['mousemove'],
 						onClick: pointClicked,
 						tooltips: {
 							enabled: false,
@@ -432,7 +578,7 @@
 				}
 			});
 		}//getWeather
-		getWeather();
+		//getWeather();
 
 		function setWeatherSpinner(state) {
 			if (state) {
@@ -520,15 +666,15 @@
         </div>
         <div class="w3-container w3-padding">
           <h3>Add Wifi Settings to BBQPi</h3>
-          <form id="wifiSettings" class="w3-container">
-            <input class="w3-input w3-border" type="text" id="ssid" name="ssid"
+          <form id="newWifiSettings" class="w3-container">
+            <input class="w3-input w3-border" type="text" id="newWifiSsid" name="newWifiSsid"
              autocorrect="off" autocapitalize="none">
             <label>SSID</label><br><br>
-            <input class="w3-input w3-border" type="password" id="password"
-             name="password" autocorrect="off" autocapitalize="none">
+            <input class="w3-input w3-border" type="password" id="newWifiPassword"
+             name="newWifiPassword" autocorrect="off" autocapitalize="none">
             <label>Password</label><span class="fa fa-eye w3-right w3-xlarge" style="cursor:pointer;"
                                     onclick="showMaskPassword();" id="showPass"></span><br><br>
-            <button class="w3-btn w3-black w3-right" id="submitWifiSettings" onclick="return addWifi();">Submit</button>
+            <button class="w3-btn w3-black w3-right" id="submitNewWifiSettings" onclick="return addWifi();">Submit</button>
           </form>
         </div>
       </div>
@@ -591,15 +737,15 @@
         </div>
         <div class="w3-container w3-padding">
           <h3>Add Wifi Network</h3>
-          <form id="wifiSettings" class="w3-container">
-            <input class="w3-input w3-border" type="text" id="ssid" name="ssid"
+          <form id="existingWifiSettings" class="w3-container">
+            <input class="w3-input w3-border" type="text" id="existingWifiSsid" name="existingWifiSsid"
              autocorrect="off" autocapitalize="none">
             <label>SSID</label><br><br>
-            <input class="w3-input w3-border" type="password" id="password"
-             name="password" autocorrect="off" autocapitalize="none">
+            <input class="w3-input w3-border" type="password" id="existingWifiPassword"
+             name="existingWifiPassword" autocorrect="off" autocapitalize="none">
             <label>Password</label><br><span class="fa fa-eye w3-left w3-xlarge" style="cursor:pointer;"
                                     onclick="showMaskPassword();" id="showPass"></span>
-            <button class="w3-button w3-green w3-right" id="submitWifiSettings" onclick="return addWifi();">Add</button>
+            <button class="w3-button w3-green w3-right" id="submitExistingWifiSettings" onclick="return addWifi();">Add</button>
           </form>
         </div>
       </div>
