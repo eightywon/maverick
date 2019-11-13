@@ -56,147 +56,151 @@
       }
     </style>
     <script>
-      var getWeather;
-      var zipCode, apiKey;
-      var tooltipVisible=false; //todo: can this be replaced by checking tooltip opacity?
-      var pointToDelete;
-      var isLink=false;
-	var linkX=new Array();
-	var linkY=new Array();
+	var getWeather;
+	var zipCode, apiKey;
+	var tooltipVisible=false; //todo: can this be replaced by checking tooltip opacity?
+	var pointDetails;
+	var isLink=-1;
+	var linkDataset=-1;
+	var noteLinks=new Array();
 	var myChart;
 	var flag=false;
-      function setCookie(form) {
-        document.cookie="zipCode="+escape(form.zipCode.value)+";path=/;";
-        document.cookie="apiKey="+escape(form.apiKey.value)+";path=/;";
-      }
+	var iconSize;
+	var iconXOffset;
+	var iconYOffset;
 
-      function getCookie() {
-        if (document.cookie) {
-          match=document.cookie.match(new RegExp( 'zipCode=([^;]+)'));
-          zipCode=match[1];
+	if (screen.width>=1920) {
+		iconSize=36;
+		iconXOffset=3;
+		iconYOffset=2;
 
-          match=document.cookie.match(new RegExp( 'apiKey=([^;]+)'));
-          apiKey=match[1];
-        } else {
-          zipCode='92123';
-        }
-        $("#zipCode").val(zipCode);
-        $("#apiKey").val(apiKey);
-      }
-      //getCookie();
+	} else {
+		iconSize=18;
+		iconXOffset=6;
+		iconYOffset=4;
+	}
 
-      function showMaskPassword() {
-        var fld=document.getElementById("password");
-        if (fld.type=="password") {
-          fld.type="text";
-          $("#showPass").removeClass("fa fa-eye w3-right w3-xlarge");
-          $("#showPass").addClass("fa fa-eye-slash w3-right w3-xlarge");
-        } else {
-          fld.type="password";
-          $("#showPass").removeClass("fa fa-eye-slash w3-right w3-xlarge");
-          $("#showPass").addClass("fa fa-eye w3-right w3-xlarge");
-        }
-      }
+	function setCookie(form) {
+		document.cookie="zipCode="+escape(form.zipCode.value)+";path=/;";
+		document.cookie="apiKey="+escape(form.apiKey.value)+";path=/;";
+	}
 
-      function closeSettingsModal() {
-        $("#settingsModal:visible").hide();
-        document.getElementById("password").type="password";
-        $("#showPass").removeClass("fa fa-eye-slash w3-right w3-xlarge");
-        $("#showPass").addClass("fa fa-eye w3-right w3-xlarge");
-        document.getElementById("ssid").style.backgroundColor="";
-        document.getElementById("password").style.backgroundColor="";
-      }
+	function getCookie() {
+		if (document.cookie) {
+			match=document.cookie.match(new RegExp( 'zipCode=([^;]+)'));
+			zipCode=match[1];
+			match=document.cookie.match(new RegExp( 'apiKey=([^;]+)'));
+			apiKey=match[1];
+		} else {
+			zipCode='92123';
+		}
+		$("#zipCode").val(zipCode);
+		$("#apiKey").val(apiKey);
+	}
+	//getCookie();
 
-      function addWifi() {
-        var ssid=document.getElementById("ssid");
-        var pass=document.getElementById("password");
-        var ret=true;
-        if (ssid.value=="") {
-          ssid.style.backgroundColor="lightcoral";
-          ret=false;
-        } else {
-          ssid.style.backgroundColor="";
-        }
-        if (document.getElementById("password").value=="") {
-          pass.style.backgroundColor="lightcoral";
-          ret=false;
-        } else {
-          pass.style.backgroundColor="";
-        }
-        return ret;
-      }
+	function showMaskPassword() {
+		var fld=document.getElementById("password");
+		if (fld.type=="password") {
+			fld.type="text";
+			$("#showPass").removeClass("fa fa-eye w3-right w3-xlarge");
+			$("#showPass").addClass("fa fa-eye-slash w3-right w3-xlarge");
+		} else {
+			fld.type="password";
+			$("#showPass").removeClass("fa fa-eye-slash w3-right w3-xlarge");
+			$("#showPass").addClass("fa fa-eye w3-right w3-xlarge");
+		}
+	}
+
+	function closeSettingsModal() {
+		$("#settingsModal:visible").hide();
+		document.getElementById("password").type="password";
+		$("#showPass").removeClass("fa fa-eye-slash w3-right w3-xlarge");
+		$("#showPass").addClass("fa fa-eye w3-right w3-xlarge");
+		document.getElementById("ssid").style.backgroundColor="";
+		document.getElementById("password").style.backgroundColor="";
+	}
+
+	function addWifi() {
+		var ssid=document.getElementById("ssid");
+		var pass=document.getElementById("password");
+		var ret=true;
+		if (ssid.value=="") {
+			ssid.style.backgroundColor="lightcoral";
+			ret=false;
+		} else {
+			ssid.style.backgroundColor="";
+		}
+		if (document.getElementById("password").value=="") {
+			pass.style.backgroundColor="lightcoral";
+			ret=false;
+		} else {
+			pass.style.backgroundColor="";
+		}
+		return ret;
+	}
 
 	//testing from here
 	/*
 	todo notes:
-		1. add "add note" functionality
+		1. add "add note" functionality - DONE
 			a. note type - pit or food
 			b. add ability to attach pic? for instance, picture of bark. would need to add blob column in db
+			c. bug: canvas doesn't refresh to show new note when added, maybe call the function to refresh the chart
 		2. fix weather, openweather map?
+		3. bug: just found that note card clicks don't translate to the correct point on the chart to activate the correct tooltip
+		   there must be some translation issue depending on screen size
+		4. bug: note icon way too big on mobile - made this dynamic based on screen.width but it's not working well yet
+		5. bug: tooltips overflow left bound
+		6. bug: note icons overflow top and left bounds
+		7. bug: note icon hovers are inconsistant
+		8. todo: consider changing from note icons to custom point sizes to indicate a note has been added at that point (see https://stackoverflow.com/questions/55468483/highlight-a-particular-point-in-chart-js)
 	*/
+
+	//called from mousemove event listener, used to track if mouse is currently over a note icon
 	function CanvasMouseMove(e) {
+		if (!tooltipVisible) {
 		var x, y;
 		if (e.layerX || e.layerX == 0) { // for firefox
 			x = e.layerX;
 			y = e.layerY;
 		}
 
-		//x -= canvas.offsetLeft;
-		//y -= canvas.offsetTop;
-		//console.log("x: "+x+" y: "+y);
-		for (i=0;i<linkX.length;i++) {
-			//console.log("link pos: x:"+linkX[i].xPos+" y:"+linkX[i].yPos);
-			if (x >= linkX[i].xPos && x <= (linkX[i].xPos + 18)
-			    && y >= linkX[i].yPos && y <= (linkX[i].yPos + 18)) {
-				console.log("we're on it");
+		for (i=0;i<noteLinks.length;i++) {
+			if (x >= noteLinks[i].xPos && x <= (noteLinks[i].xPos + iconSize)
+			    && y >= noteLinks[i].yPos && y <= (noteLinks[i].yPos + iconSize)) {
 				document.body.style.cursor = "pointer";
-				isLink = true;
+				isLink = noteLinks[i].index;
+				linkDataset=noteLinks[i].dataSet;
 				break;
 			} else {
-				console.log("we're off it");
 				document.body.style.cursor = "";
-				isLink = false;
+				isLink = -1;
+				linkDataset=-1;
 			}
 		}
-	}
 
-	function Link_click(e) {
-		if (isLink) {
-			debugger;
-			//console.log(e);
-			isLink=false;
-			//console.log("clicked");
-			clickElement(myChart,0,1000);
 		}
-		event.preventDefault;
-		e.preventDefault;
 	}
 
+	//when the user clicks a note icon, this function is called to click the related line point which then shows the related tooltip
 	function clickElement(chart, datasetIndex, index) {
-		debugger;
-		console.log("clickElement firing");
 		var node = chart.canvas;
-
 		var rect = node.getBoundingClientRect();
-		console.log(rect.left+" "+rect.top);
 		var el = chart.getDatasetMeta(datasetIndex).data[index];
-		console.log(el);
 		var point = resolveElementPoint(el);
 		var event = new MouseEvent('mousemove', {
-			/*
-			clientX: rect.left + point.x,
-			clientY: rect.top + point.y,
-			*/
-			clientX: rect.left+el._model.x,
-			clientY: rect.top+el._model.y,
+			clientX: rect.left+el._model.x-iconXOffset, //-iconX/YOffset is a fix to ensure the right point/tooltip is clicked for the note
+			clientY: rect.top+el._model.y-iconYOffset,  //bug: this isn't working on mobile, right point/tooltip isn't being clicked
 			cancelable: false,
 			bubbles: true,
 			view: window
 		});
-		console.log(event);
+		tooltipVisible=true;
 		node.dispatchEvent(event);
 	}
 
+	//get point data, used by clickElement procedure
 	function resolveElementPoint(el) {
 		var point = {x: 0, y: 0};
 		if (el) {
@@ -208,12 +212,12 @@
 				point = el._model;
 			}
 		}
-		console.log(point);
 		return point;
 	}
 
+	//delete option was clicked from tooltip, delete that point from DB
 	function deletePoint() {
-		var dateTime=new Date(pointToDelete);
+		var dateTime=new Date(pointDetails);
 		dateTime=moment(dateTime).format("YYYY-MM-DD HH:mm:ss");
 		$.ajax({
 			url: 'delpoint.php',
@@ -235,12 +239,32 @@
 		});
 	}
 
+	//add note was clicked from tooltip, add note to DB
+	function addNote() {
+		var dateTime=new Date(pointDetails);
+		dateTime=moment(dateTime).format("YYYY-MM-DD HH:mm:ss");
+		$.ajax({
+			url: 'addnote.php',
+			type:'POST',
+			data: {'cookid': 98, 'time': dateTime, 'note': 'note: '+dateTime}, //todo: send actual cookid
+			success:function(data){
+				if (data!='fail') {
+					Chart.helpers.each(Chart.instances, function(instance){ //todo: is there a better way to get chart instance?
+						console.log("dataset: ",myChart.data.datasets);
+						//myChart.data.datasets[0].data[2] = 50;
+						//myChart.update();
+						document.getElementById("chartjs-tooltip").style.opacity="0";
+						tooltipVisible=false;
+					})
+				} else { alert('failed');} //todo: what to do on failure?
+			}
+		});
+	}
+
 	function pointClicked(e) {
 	//function pointClicked(e,item) { <--- change this back if using events: 'click' in chart options
-		console.log(myChart);
-		debugger;
-		var item=myChart.tooltip._active;
-		console.log(item);
+		var item=myChart.tooltip._active; //bug: when clicking a different point with a point/tooltip currently active, this returns the current tooltip not the one at the new point
+						 //or something like that, it looks like different objects are being passed under different conditions, maybe?
 		if (item && item[0]) {
 			if (document.getElementById("chartjs-tooltip")) {
 				document.getElementById("chartjs-tooltip").style.opacity="1";
@@ -249,12 +273,10 @@
 			}
 			updateConfigByMutating();
 		} else {
-			debugger;
-			if (isLink) {
-				debugger;
-				console.log("it was true, sending click");
-				isLink=false;
-				clickElement(myChart,0,1000);
+			if (isLink!=-1) {
+				clickElement(myChart,linkDataset,isLink);
+				isLink=-1;
+				linkDataset=-1;
 			} else {
 				if (document.getElementById("chartjs-tooltip")) {
 					document.getElementById("chartjs-tooltip").style.opacity="0";
@@ -273,12 +295,9 @@
 	}
 
 	var customTooltips=function(tooltip) {
-		if (window.event.type=="click") {
-			//console.log("cx: "+window.event.clientX+" cy: "+window.event.clientY);
-		}
 		//don't show a new tooltip on hover if the the current tooltip showing has been clicked
 		//this is to allow the user to 'sticky' the clicked tooltip so they can click the 'Delete?' link
-		if (window.event.type!='click' && tooltipVisible==true) {
+		if (window.event.type!='click' && tooltipVisible==true && isLink==-1) {
 			console.log("suppressing tooltip click");
 			return;
 		}
@@ -318,7 +337,7 @@
 		// Set Text
 		if (tooltip.body) {
 			if  (tooltip.dataPoints[0]) {
-				pointToDelete=tooltip.dataPoints[0].label;
+				pointDetails=tooltip.dataPoints[0].label;
 			}
 			var titleLines = tooltip.title || [];
 			var bodyLines = tooltip.body.map(getBody);
@@ -337,6 +356,8 @@
 			});
 			if (note[tooltip.dataPoints[0].index]!="") {
 				innerHtml+='<tr><td><span><strong>Note: </strong>'+note[tooltip.dataPoints[0].index]+'</span></td></tr>';
+			} else {
+				innerHtml+='<tr><td align="center"><span><a href="#" onclick="addNote(); return false;">Add note?</a></span></td></tr>';
 			}
 			innerHtml+='<tr><td align="center"><span><a href="#" onclick="deletePoint(); return false;">Delete?</a></span></td></tr>';
 			innerHtml += '</tbody>';
@@ -344,9 +365,13 @@
 			tableRoot.innerHTML = innerHtml;
 		}
 
+		//what was the point of these? this started working once I commented them out
+		/*
 		var positionY = this._chart.canvas.offsetTop;
 		var positionX = this._chart.canvas.offsetLeft;
-
+		*/
+		var positionY = myChart.canvas.offsetTop;
+		var positionX = myChart.canvas.offsetLeft;
 
 		// Display, position, and set styles for font
 		tooltipEl.style.opacity = 1;
@@ -389,53 +414,32 @@
 				img.src="note.png";
 				Chart.plugins.register({
 					afterDatasetDraw: function(chart) {
-						//console.log("afterDatasetDraw");
 						ctx=chart.ctx;
 						theCtx=chart.ctx;
-						linkX=[];
-						linkY=[];
+						noteLinks=[];
 						$.each(note, function(index, value) {
 							if (value!="") {
 								var points=chart.getDatasetMeta(0).data;
-								//console.log(points[index]._model.x);
-								//console.log(points[index]._model.y);
 								ctx.save();
 								ctx.globalAlpha=0.15;
-								ctx.drawImage(img,points[index]._model.x-18,points[index]._model.y-18,18,18);
-								linkX.push({
+								ctx.drawImage(img,points[index]._model.x-iconSize,points[index]._model.y-iconSize,iconSize,iconSize);
+								noteLinks.push({
 									dataSet: 0,
 									index: index,
 									value: value,
-									xPos: points[index]._model.x-18,
-									yPos: points[index]._model.y-18
-								});
-								linkY.push({
-									dataSet: 0,
-									index: index,
-									value: value,
-									xPos: points[index]._model.x-18,
-									yPos: points[index]._model.y-18
+									xPos: points[index]._model.x-iconSize,
+									yPos: points[index]._model.y-iconSize
 								});
 								points=chart.getDatasetMeta(1).data;
-								//console.log(points[index]._model.x);
-								//console.log(points[index]._model.y);
-								ctx.drawImage(img,points[index]._model.x-18,points[index]._model.y-18,18,18);
-								linkX.push({
+								ctx.drawImage(img,points[index]._model.x-iconSize,points[index]._model.y-iconSize,iconSize,iconSize);
+								noteLinks.push({
 									dataSet: 1,
 									index: index,
 									value: value,
-									xPos: points[index]._model.x-18,
-									yPos: points[index]._model.y-18
-								});
-								linkY.push({
-									dataSet: 1,
-									index: index,
-									value: value,
-									xPos: points[index]._model.x-18,
-									yPos: points[index]._model.y-18
+									xPos: points[index]._model.x-iconSize,
+									yPos: points[index]._model.y-iconSize
 								});
 								ctx.restore();
-								//console.log(index+" "+value);
 							}
 						});
 					}
@@ -533,7 +537,6 @@
 				dataType: "jsonp",
 				async: false,
 				success: function(json) {
-					//console.log(json);
 					if (json.forecast) {
 						$("#wthrHigh").html("&nbsp;"+json.forecast.simpleforecast.forecastday[0].high.fahrenheit+"&deg;");
 						$("#wthrLow").html("&nbsp;"+json.forecast.simpleforecast.forecastday[0].low.fahrenheit+"&deg;");
@@ -551,7 +554,6 @@
 					}
 				},
 				error: function(data) {
-					//console.log(data);
 				}
 			});
 
@@ -560,7 +562,6 @@
 				dataType: "jsonp",
 				async: false,
 				success: function(json) {
-					//console.log(json);
 					if (json.current_observation) {
 						$("#wthrNow").html("&nbsp;"+json.current_observation.temp_f+"&deg;");
 						$("#wLocation").html(" - "+json.current_observation.display_location.full);
@@ -574,7 +575,6 @@
 					}
 				},
 				error: function(data) {
-					//console.log(data);
 				}
 			});
 		}//getWeather
@@ -791,7 +791,7 @@
       <!-- graph card -->
       <div class="w3-container w3-margin-bottom">
        <div id="chartHolder" class="w3-row w3-card-4 w3-light-grey">
-        <canvas id="myChart" width="1800" height="800"></canvas>
+        <canvas id="myChart" width="1800" height="500"></canvas>
        </div>
       </div>
 
