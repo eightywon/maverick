@@ -14,6 +14,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.js"></script>
     <script src="https://www.chartjs.org/samples/latest/utils.js"></script>
     <style>
+
       html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
       @media only screen and (min-width: 801px) {
         #top_container {
@@ -73,12 +74,14 @@
 		iconSize=36;
 		iconXOffset=3;
 		iconYOffset=2;
-
+		iconBorder=24;
 	} else {
 		iconSize=18;
 		iconXOffset=6;
 		iconYOffset=4;
+		iconBorder=18;
 	}
+	console.log(iconSize);
 
 	function setCookie(form) {
 		document.cookie="zipCode="+escape(form.zipCode.value)+";path=/;";
@@ -155,44 +158,54 @@
 		6. bug: note icons overflow top and left bounds
 		7. bug: note icon hovers are inconsistant
 		8. todo: consider changing from note icons to custom point sizes to indicate a note has been added at that point (see https://stackoverflow.com/questions/55468483/highlight-a-particular-point-in-chart-js)
+		9. delete note when deleting related point
 	*/
 
 	//called from mousemove event listener, used to track if mouse is currently over a note icon
 	function CanvasMouseMove(e) {
-		if (!tooltipVisible) {
-		var x, y;
-		if (e.layerX || e.layerX == 0) { // for firefox
-			x = e.layerX;
-			y = e.layerY;
-		}
-
-		for (i=0;i<noteLinks.length;i++) {
-			if (x >= noteLinks[i].xPos && x <= (noteLinks[i].xPos + iconSize)
-			    && y >= noteLinks[i].yPos && y <= (noteLinks[i].yPos + iconSize)) {
-				document.body.style.cursor = "pointer";
-				isLink = noteLinks[i].index;
-				linkDataset=noteLinks[i].dataSet;
-				break;
-			} else {
-				document.body.style.cursor = "";
-				isLink = -1;
-				linkDataset=-1;
+		//if (!tooltipVisible) {
+			var x, y;
+			if (e.layerX || e.layerX == 0) { // for firefox
+				x = e.layerX;
+				y = e.layerY;
 			}
-		}
-
-		}
+			console.log(x,y);
+			for (i=0;i<noteLinks.length;i++) {
+				if (x >= noteLinks[i].xPos && x <= (noteLinks[i].xPos + iconBorder)
+				    && y >= noteLinks[i].yPos && y <= (noteLinks[i].yPos + iconBorder)) {
+					document.body.style.cursor = "pointer";
+					isLink = noteLinks[i].index;
+					linkDataset=noteLinks[i].dataSet;
+					/*
+					//test
+					tooltipVisible=true;
+					var tooltip=myChart.tooltip._model;
+					tooltip.opacity=1;
+					customTooltips(tooltip);
+					myChart.update(); //this replaces the line below in function, as of now this is needed
+					//end test
+					*/
+					break;
+				} else {
+					document.body.style.cursor = "";
+					isLink = -1;
+					linkDataset=-1;
+				}
+			}
+		//}
 	}
 
 	//when the user clicks a note icon, this function is called to click the related line point which then shows the related tooltip
 	function clickElement(chart, datasetIndex, index) {
+		debugger;
 		var node = chart.canvas;
 		var rect = node.getBoundingClientRect();
 		var el = chart.getDatasetMeta(datasetIndex).data[index];
 		var point = resolveElementPoint(el);
-		var event = new MouseEvent('mousemove', {
+		var event = new MouseEvent('touchmove', {
 			clientX: rect.left+el._model.x-iconXOffset, //-iconX/YOffset is a fix to ensure the right point/tooltip is clicked for the note
 			clientY: rect.top+el._model.y-iconYOffset,  //bug: this isn't working on mobile, right point/tooltip isn't being clicked
-			cancelable: false,
+			cancelable: true,
 			bubbles: true,
 			view: window
 		});
@@ -262,16 +275,20 @@
 	}
 
 	function pointClicked(e) {
+		debugger;
 	//function pointClicked(e,item) { <--- change this back if using events: 'click' in chart options
 		var item=myChart.tooltip._active; //bug: when clicking a different point with a point/tooltip currently active, this returns the current tooltip not the one at the new point
 						 //or something like that, it looks like different objects are being passed under different conditions, maybe?
+		var tooltip=myChart.tooltip._model;
 		if (item && item[0]) {
 			if (document.getElementById("chartjs-tooltip")) {
 				document.getElementById("chartjs-tooltip").style.opacity="1";
 				tooltipVisible=true;
-				customTooltips(item);
+				//customTooltips(item);
+				customTooltips(tooltip);
 			}
-			updateConfigByMutating();
+			myChart.update(); //this replaces the line below in function, as of now this is needed
+			//updateConfigByMutating(); //no longer needed?
 		} else {
 			if (isLink!=-1) {
 				clickElement(myChart,linkDataset,isLink);
@@ -286,6 +303,8 @@
 		}
 	}
 
+	/* no longer needed?
+	*/
 	function updateConfigByMutating() {
 		//this is a hack to allow other point clicking when a tooltip is currently showing
 		//without this, cliks on other points/tooltips don't display that tooltip
@@ -293,11 +312,15 @@
 			instance.chart.update();
 		})
 	}
+	/*
+	*/
 
 	var customTooltips=function(tooltip) {
+		console.log(isLink);
 		//don't show a new tooltip on hover if the the current tooltip showing has been clicked
 		//this is to allow the user to 'sticky' the clicked tooltip so they can click the 'Delete?' link
-		if (window.event.type!='click' && tooltipVisible==true && isLink==-1) {
+		if (window.event.type!='click' && tooltipVisible==true && isLink==-1) { //what does isLink=-1 do again?
+		//if (window.event.type!='click' && ((tooltipVisible==true && isLink==-1) || (tooltipVisible==false && isLink!=-1))) {
 			console.log("suppressing tooltip click");
 			return;
 		}
@@ -307,7 +330,8 @@
 			tooltipEl = document.createElement('div');
 			tooltipEl.id = 'chartjs-tooltip';
 			tooltipEl.innerHTML = '<table></table>';
-			this._chart.canvas.parentNode.appendChild(tooltipEl);
+			//this._chart.canvas.parentNode.appendChild(tooltipEl);
+			myChart.canvas.parentNode.appendChild(tooltipEl);
 		}
 
 		document.getElementById("chartjs-tooltip").style.opacity="0.5";
@@ -408,8 +432,10 @@
 
 				canvas=document.getElementById("myChart");
 				canvas.addEventListener("mousemove",CanvasMouseMove, false);
+				//canvas.addEventListener("touchmove",CanvasMouseMove, false);
 				//canvas.addEventListener("click",customTooltips,true);
-				canvas.addEventListener("click",pointClicked,true);
+				canvas.addEventListener("click",pointClicked,false);
+				//canvas.addEventListener("touchstart",pointClicked,false);
 				var img=new Image();
 				img.src="note.png";
 				Chart.plugins.register({
@@ -476,7 +502,7 @@
 					},
 					options: {
 						//responsive: false,
-						events: ['mousemove'],
+						//events: ['mousemove'],
 						onClick: pointClicked,
 						tooltips: {
 							enabled: false,
@@ -597,13 +623,13 @@
 
 		//click outside closes modal
 		var modal=document.getElementById("settingsModal");
+
 		window.onclick=function(event) {
 			if (event.target==modal) {
 				closeSettingsModal();
 				//w3_close();
 			}
 		}
-
 		//escape closes modal
 		window.onkeyup=function(event) {
 			if (event.keyCode==27) {
