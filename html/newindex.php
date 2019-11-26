@@ -1,4 +1,5 @@
-<!DOCTYPE html> <html>
+<!DOCTYPE html>
+<html>
   <head>
     <title>BBQPi</title>
     <meta charset="UTF-8">
@@ -15,6 +16,9 @@
     <script src="https://www.chartjs.org/samples/latest/utils.js"></script>
     <style>
 
+      body {
+	-webkit-tap-highlight-color: transparent !important;
+      }
       html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
       @media only screen and (min-width: 801px) {
         #top_container {
@@ -37,6 +41,8 @@
         -moz-user-select: none;
 	-webkit-user-select: none;
 	-ms-user-select: none;
+	-webkit-tap-highlight-color: transparent;
+        -webkit-backface-visibility:  hidden;
       }
       #chartjs-tooltip {
 	opacity: 1;
@@ -55,6 +61,7 @@
 	height: 10px;
 	margin-right: 10px;
       }
+
     </style>
     <script>
 	var getWeather;
@@ -169,7 +176,6 @@
 				x = e.layerX;
 				y = e.layerY;
 			}
-			console.log(x,y);
 			for (i=0;i<noteLinks.length;i++) {
 				if (x >= noteLinks[i].xPos && x <= (noteLinks[i].xPos + iconBorder)
 				    && y >= noteLinks[i].yPos && y <= (noteLinks[i].yPos + iconBorder)) {
@@ -197,7 +203,6 @@
 
 	//when the user clicks a note icon, this function is called to click the related line point which then shows the related tooltip
 	function clickElement(chart, datasetIndex, index) {
-		debugger;
 		var node = chart.canvas;
 		var rect = node.getBoundingClientRect();
 		var el = chart.getDatasetMeta(datasetIndex).data[index];
@@ -235,7 +240,7 @@
 		$.ajax({
 			url: 'delpoint.php',
 			type:'POST',
-			data: {'cookid': 98, 'time': dateTime}, //todo: send actual cookid
+			data: {'cookid': 101, 'time': dateTime}, //todo: send actual cookid
 			success:function(data){
 				if (data!='fail') {
 					Chart.helpers.each(Chart.instances, function(instance){ //todo: is there a better way to get chart instance?
@@ -255,11 +260,12 @@
 	//add note was clicked from tooltip, add note to DB
 	function addNote() {
 		var dateTime=new Date(pointDetails);
+		var noteText=document.getElementById("addNoteText").value;
 		dateTime=moment(dateTime).format("YYYY-MM-DD HH:mm:ss");
 		$.ajax({
 			url: 'addnote.php',
 			type:'POST',
-			data: {'cookid': 98, 'time': dateTime, 'note': 'note: '+dateTime}, //todo: send actual cookid
+			data: {'cookid': 101, 'time': dateTime, 'note': noteText}, //todo: send actual cookid
 			success:function(data){
 				if (data!='fail') {
 					Chart.helpers.each(Chart.instances, function(instance){ //todo: is there a better way to get chart instance?
@@ -276,6 +282,8 @@
 
 	function pointClicked(e) {
 		debugger;
+		//CanvasMouseMove(e);
+		console.log("clicked");
 	//function pointClicked(e,item) { <--- change this back if using events: 'click' in chart options
 		var item=myChart.tooltip._active; //bug: when clicking a different point with a point/tooltip currently active, this returns the current tooltip not the one at the new point
 						 //or something like that, it looks like different objects are being passed under different conditions, maybe?
@@ -379,9 +387,12 @@
 				innerHtml += '<tr><td>' + span + body + '</td></tr>';
 			});
 			if (note[tooltip.dataPoints[0].index]!="") {
-				innerHtml+='<tr><td><span><strong>Note: </strong>'+note[tooltip.dataPoints[0].index]+'</span></td></tr>';
+				var text=note[tooltip.dataPoints[0].index].replace(/(?![^\n]{1,50}$)([^\n]{1,50})\s/g, '$1<br />');
+				//var text=note[tooltip.dataPoints[0].index];
+				innerHtml+='<tr><td><span><strong>Note: </strong>'+text+'</span></td></tr>';
 			} else {
-				innerHtml+='<tr><td align="center"><span><a href="#" onclick="addNote(); return false;">Add note?</a></span></td></tr>';
+				//innerHtml+='<tr><td align="center"><span><a href="#" onclick="addNote(); return false;">Add note?</a></span></td></tr>';
+				innerHtml+='<tr><td align="center"><span><a href="#" onclick="document.getElementById(\'addNoteModal\').style.display=\'block\';">Add note?</a></span></td></tr>';
 			}
 			innerHtml+='<tr><td align="center"><span><a href="#" onclick="deletePoint(); return false;">Delete?</a></span></td></tr>';
 			innerHtml += '</tbody>';
@@ -413,7 +424,7 @@
 		$.ajax({
 			url: "getdata.php",
 			type: "POST",
-			data: {'reqType': 'chartjs', 'cookid': 98}, //todo: get the real cook id
+			data: {'reqType': 'chartjs', 'cookid': 101}, //todo: get the real cook id
 			async: false,
 			dataType: "json",
 			success: function(result){
@@ -431,10 +442,10 @@
 				});
 
 				canvas=document.getElementById("myChart");
-				canvas.addEventListener("mousemove",CanvasMouseMove, false);
+				canvas.addEventListener("mousemove",CanvasMouseMove, false, {passive: false});
 				//canvas.addEventListener("touchmove",CanvasMouseMove, false);
 				//canvas.addEventListener("click",customTooltips,true);
-				canvas.addEventListener("click",pointClicked,false);
+				canvas.addEventListener("click",pointClicked,false, {passive: false});
 				//canvas.addEventListener("touchstart",pointClicked,false);
 				var img=new Image();
 				img.src="note.png";
@@ -630,6 +641,7 @@
 				//w3_close();
 			}
 		}
+
 		//escape closes modal
 		window.onkeyup=function(event) {
 			if (event.keyCode==27) {
@@ -650,7 +662,7 @@
     <!-- Top container -->
     <div id="top_container" class="w3-bar w3-top w3-black w3-large" style="z-index:4">
       <button class="w3-bar-item w3-button w3-hide-large w3-hover-none w3-hover-text-light-grey" onclick="w3_open();"><span class="w3-xlarge"><i class="fa fa-bars"></i> &nbsp;Menu</span></button>
-      <button id="toggleCook" class="w3-bar-item w3-button w3-hide-large w3-hover-none w3-hover-text-light-grey w3-right" onclick="w3_open();"><span class="w3-xlarge"><i class="fa fa-thermometer-half"></i> &nbsp;New Cook</span></button>
+      <button id="toggleCook" class="w3-bar-item w3-button w3-hide-large w3-hover-none w3-hover-text-light-grey w3-right" onclick="document.getElementById('newCookModal').style.display='block';"><span class="w3-xlarge"><i class="fa fa-thermometer-half"></i> &nbsp;New Cook</span></button>
     </div>
 
     <!-- Sidebar/menu -->
@@ -659,6 +671,7 @@
         <h4><b><i class="fa fa-fire"></i>&nbsp; BBQPi</b></h4>
       </div>
       <div class="w3-bar-block" style="padding-top:8px">
+        <a href="#" class="w3-bar-item w3-button w3-padding" onclick="document.getElementById('newCookModal').style.display='block';"><i class="fa fa-thermometer-half fa-fw"></i>&nbsp; New Cook</a>
         <a href="/" id="getWeather" class="w3-bar-item w3-button w3-padding"><i class="fa fa-chart-pie fa-fw"></i>&nbsp; Dashboard</a>
         <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-utensils fa-fw"></i>&nbsp; Cooks</a>
         <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-bell fa-fw"></i>&nbsp; Alerts</a>
@@ -777,6 +790,44 @@
       </div>
     </div>
 
+    <!-- new cook modal -->
+    <div id="newCookModal" class="w3-modal">
+      <div class="w3-hide-large" style="margin-top:100px"></div>
+      <div class="w3-modal-content w3-large" style="margin-top:-50px" tabindex="-1">
+        <header class="w3-container w3-black">
+          <span onclick="document.getElementById('newCookModal').style.display='none'" class="w3-btn w3-right"
+                style="padding-top:3px;padding-bottom:3px;padding-left:8px;padding-right:8px">&#10006;</span>
+          <h2>New Cook</h2>
+        </header>
+        <div class="w3-container w3-padding">
+          <h3>Cook Stuff</h3>
+          <table class="w3-table w3-striped w3-white">
+          </table>
+        </div>
+        <div class="w3-container w3-padding">
+        </div>
+      </div>
+    </div>
+
+    <!-- add note modal -->
+    <div id="addNoteModal" class="w3-modal">
+      <div class="w3-hide-large" style="margin-top:100px"></div>
+      <div class="w3-modal-content w3-large" style="margin-top:-50px" tabindex="-1">
+        <header class="w3-container w3-black">
+          <span onclick="document.getElementById('addNoteModal').style.display='none'" class="w3-btn w3-right"
+                style="padding-top:3px;padding-bottom:3px;padding-left:8px;padding-right:8px">&#10006;</span>
+          <h2>Add a Note</h2>
+        </header>
+	<form id="addNoteForm" class="w3-container">
+          <input class="w3-input w3-border" type="text" id="addNoteText" name="addNoteText">
+          <label>Note</label><br><br>
+          <button class="w3-button w3-green w3-right" id="addNoteSubmit" onclick="return addNote();">Add</button>
+        </form>
+        </div>
+        <div class="w3-container w3-padding">
+        </div>
+      </div>
+    </div>
 
     <!-- Overlay effect when opening sidebar on small screens -->
     <div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
