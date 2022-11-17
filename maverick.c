@@ -1,7 +1,7 @@
 #define STATE_START_PULSES      0
 #define STATE_FIRST_BIT         1
 #define STATE_DATA              2
-#define PIN                     6 //15
+#define PIN                     15
 
 #include <pigpio.h>
 #include <stdio.h>
